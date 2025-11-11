@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { registerSchema } from "@/lib/validations/auth";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name } = await request.json();
+    const body = await request.json();
 
-    // Validar campos
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email y contraseña son requeridos" },
-        { status: 400 }
-      );
-    }
+    // Validar con Zod
+    const validatedData = registerSchema.parse(body);
 
     // Verificar si el usuario ya existe
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: validatedData.email }
     });
 
     if (existingUser) {
@@ -27,13 +24,13 @@ export async function POST(request: Request) {
     }
 
     // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
     // Crear usuario
     const user = await prisma.user.create({
       data: {
-        email,
-        name,
+        email: validatedData.email,
+        name: validatedData.name,
         password: hashedPassword,
       },
     });
@@ -50,6 +47,14 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
+    // Errores de validación de Zod
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Datos inválidos", details: error.issues },
+        { status: 400 }
+      );
+    }
+
     console.error("Error al registrar usuario:", error);
     return NextResponse.json(
       { error: "Error al registrar usuario" },
