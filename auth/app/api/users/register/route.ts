@@ -50,7 +50,13 @@ export async function POST(request: Request) {
     // Errores de validación de Zod
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Datos inválidos", details: error.errors },
+        { 
+          error: "Datos inválidos", 
+          details: error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message
+          }))
+        },
         { status: 400 }
       );
     }
