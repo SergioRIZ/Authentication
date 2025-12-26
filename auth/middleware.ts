@@ -1,6 +1,6 @@
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 // Rutas que requieren autenticación
 const protectedRoutes = ["/dashboard"];
@@ -9,9 +9,13 @@ const protectedRoutes = ["/dashboard"];
 const authRoutes = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
-  const session = await auth();
+  const token = await getToken({ 
+    req: request, 
+    secret: process.env.NEXTAUTH_SECRET 
+  });
+  
   const { pathname } = request.nextUrl;
-  const isLoggedIn = !!session;
+  const isLoggedIn = !!token;
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
@@ -37,7 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/login", "/register"],
 };
