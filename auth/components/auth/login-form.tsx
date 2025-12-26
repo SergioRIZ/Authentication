@@ -1,126 +1,135 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import AuthForm from './auth-form';
-import Input from '../ui/input';
-import Button from '../ui/buttons';
-import { loginSchema, type LoginInput } from '@/lib/validations/auth';
-import { set } from 'zod/v4-mini';
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Input from "@/components/ui/input";
+import Button from "@/components/ui/buttons";
+import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { z } from "zod";
 
 export default function LoginForm() {
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string>("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get("registered");
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<keyof LoginInput | "root", string>>>({});
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<LoginInput>({
-        resolver: zodResolver(loginSchema),
-    });
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors({});
 
-    const onSubmit = async (data: LoginInput) => {
-        setIsLoading(true);
-        setError("");
-
-        try {
-            const result = await signIn('credentials', {
-                email: data.email,
-                password: data.password,
-                redirect: false,
-            })
-            if(result?.error) {
-                setError("Email or password is incorrect.");
-            } else {
-                router.push('/dashboard');
-                router.refresh();
-            }
-        } catch (err) {
-            setError("An unexpected error occurred. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
     };
 
-    const handleGoogleSignIn = async () => {
-        setIsLoading(true);
-        setError("");
-        try {
-            await signIn('google', { callbackUrl: '/dashboard' });
-        } catch (err) {
-            setError("An unexpected error occurred. Please try again.");
-            setIsLoading(false);
-        }
+    // Validación cliente con Zod
+    try {
+      loginSchema.parse(data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: typeof errors = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as keyof LoginInput] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        setIsLoading(false);
+        return;
+      }
     }
 
-    return (
-        <AuthForm title="Log in to your account" subtitle="Welcome back! Please enter your details."> 
-        <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-            </div>
-            <div className='relative flex justify-center text-sm'>
-            </div>
+    // Iniciar sesión con NextAuth
+    try {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setErrors({ root: "Email o contraseña incorrectos" });
+        setIsLoading(false);
+        return;
+      }
+
+      // Login exitoso - redirigir al dashboard
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      setErrors({ root: "Error de conexión" });
+      setIsLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setIsGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/dashboard" });
+  }
+
+  return (
+    <div className="space-y-6">
+      {registered && (
+        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+          ¡Cuenta creada! Ya puedes iniciar sesión.
         </div>
-        {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
-                {error}
-            </div>
+      )}
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        {errors.root && (
+          <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+            {errors.root}
+          </div>
         )}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+
         <Input
-          label="Email"
+          name="email"
           type="email"
+          label="Email"
           placeholder="tu@email.com"
-          error={errors.email?.message}
-          disabled={isLoading}
-          {...register("email")}
+          error={errors.email}
+          disabled={isLoading || isGoogleLoading}
+          required
         />
 
         <Input
-          label="Contraseña"
+          name="password"
           type="password"
-          placeholder="••••••••"
-          error={errors.password?.message}
-          disabled={isLoading}
-          {...register("password")}
+          label="Contraseña"
+          placeholder="Tu contraseña"
+          error={errors.password}
+          disabled={isLoading || isGoogleLoading}
+          required
         />
 
-        <div className="text-right">
-          <Link 
-            href="/password-recovery" 
-            className="text-sm text-blue-600 hover:text-blue-500"
-          >
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </div>
-
-        <Button
-          type="submit"
-          fullWidth
-          isLoading={isLoading}
-          disabled={isLoading}
-        >
-          Iniciar Sesión
+        <Button type="submit" fullWidth isLoading={isLoading} disabled={isGoogleLoading}>
+          {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
       </form>
 
-      {/* Link a registro */}
-      <p className="text-center text-sm text-gray-600">
-        ¿No tienes cuenta?{" "}
-        <Link 
-          href="/register" 
-          className="font-medium text-blue-600 hover:text-blue-500"
-        >
-          Regístrate
-        </Link>
-      </p>
-              <Button type="button" variant='outline' fullWidth onClick={handleGoogleSignIn} disabled={isLoading}>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">O continúa con</span>
+        </div>
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        fullWidth
+        onClick={handleGoogleSignIn}
+        isLoading={isGoogleLoading}
+        disabled={isLoading}
+      >
         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
           <path
             fill="currentColor"
@@ -139,10 +148,8 @@ export default function LoginForm() {
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        Sign in with Google
-        </Button>
-        </AuthForm>
-
-    )
-
+        {isGoogleLoading ? "Conectando..." : "Google"}
+      </Button>
+    </div>
+  );
 }
