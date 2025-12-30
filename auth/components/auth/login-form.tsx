@@ -7,6 +7,7 @@ import Input from "@/components/ui/input";
 import Button from "@/components/ui/buttons";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { z } from "zod";
+import Link from "next/dist/client/link";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -121,6 +122,10 @@ export default function LoginForm() {
           <span className="px-2 bg-white text-gray-500">O continúa con</span>
         </div>
       </div>
+
+      <Link href="/forgot-password" className="text-sm text-blue-600">
+      ¿Olvidaste tu contraseña?
+      </Link>
 
       <Button
         type="button"

@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/buttons";
+import PasswordStrength from "@/components/ui/password-strength";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { z } from "zod";
 
 export default function RegisterForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof RegisterInput | "root", string>>>({});
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -92,15 +94,20 @@ export default function RegisterForm() {
         required
       />
 
-      <Input
-        name="password"
-        type="password"
-        label="Contraseña"
-        placeholder="Mínimo 6 caracteres"
-        error={errors.password}
-        disabled={isLoading}
-        required
-      />
+      <div>
+        <Input
+          name="password"
+          type="password"
+          label="Contraseña"
+          placeholder="Crea una contraseña segura"
+          error={errors.password}
+          disabled={isLoading}
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <PasswordStrength password={password} />
+      </div>
 
       <Button type="submit" fullWidth isLoading={isLoading}>
         {isLoading ? "Registrando..." : "Crear cuenta"}
