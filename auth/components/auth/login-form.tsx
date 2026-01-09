@@ -3,25 +3,28 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/buttons";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { z } from "zod";
-import Link from "next/dist/client/link";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered");
+  const reset = searchParams.get("reset");
   
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof LoginInput | "root", string>>>({});
+  const [showResendLink, setShowResendLink] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
+    setShowResendLink(false);
 
     const formData = new FormData(e.currentTarget);
     const data = {
@@ -55,7 +58,12 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        setErrors({ root: "Email o contraseña incorrectos" });
+        if (result.error.includes("EMAIL_NOT_VERIFIED")) {
+          setErrors({ root: "Debes verificar tu email antes de iniciar sesión." });
+          setShowResendLink(true);
+        } else {
+          setErrors({ root: "Email o contraseña incorrectos" });
+        }
         setIsLoading(false);
         return;
       }
@@ -78,7 +86,13 @@ export default function LoginForm() {
     <div className="space-y-6">
       {registered && (
         <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
-          ¡Cuenta creada! Ya puedes iniciar sesión.
+          ¡Cuenta creada! Revisa tu email para verificar tu cuenta.
+        </div>
+      )}
+
+      {reset && (
+        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+          ¡Contraseña actualizada! Ya puedes iniciar sesión.
         </div>
       )}
 
@@ -86,6 +100,14 @@ export default function LoginForm() {
         {errors.root && (
           <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
             {errors.root}
+            {showResendLink && (
+              <Link
+                href="/resend-verification"
+                className="block mt-2 text-blue-600 hover:text-blue-500 font-medium"
+              >
+                Reenviar email de verificación →
+              </Link>
+            )}
           </div>
         )}
 
@@ -109,6 +131,15 @@ export default function LoginForm() {
           required
         />
 
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-blue-600 hover:text-blue-500"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
+
         <Button type="submit" fullWidth isLoading={isLoading} disabled={isGoogleLoading}>
           {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
@@ -122,10 +153,6 @@ export default function LoginForm() {
           <span className="px-2 bg-white text-gray-500">O continúa con</span>
         </div>
       </div>
-
-      <Link href="/forgot-password" className="text-sm text-blue-600">
-      ¿Olvidaste tu contraseña?
-      </Link>
 
       <Button
         type="button"

@@ -28,6 +28,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
+        // Verificar si el email está verificado
+        if (!user.emailVerified) {
+          throw new Error("EMAIL_NOT_VERIFIED")
+        }
+
         const isValid = await bcrypt.compare(
           credentials.password as string,
           user.password
@@ -41,6 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
+          image: user.image,
         }
       }
     })
@@ -53,12 +59,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         })
 
         if (!user) {
+          // Crear usuario con email ya verificado (viene de Google)
           await prisma.user.create({
             data: {
               email: profile.email,
               name: profile.name || null,
               image: (profile as any).picture || null,
+              emailVerified: new Date(),
             }
+          })
+        } else if (!user.emailVerified) {
+          // Si el usuario existe pero no estaba verificado, verificarlo
+          await prisma.user.update({
+            where: { email: profile.email },
+            data: { emailVerified: new Date() }
           })
         }
       }

@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 // Rutas que requieren autenticación
-const protectedRoutes = ["/dashboard"];
+const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 
 // Rutas solo para usuarios NO autenticados
 const authRoutes = ["/login", "/register"];
