@@ -51,6 +51,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role,
         }
       }
     })
@@ -73,6 +74,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               name: profile.name || null,
               image: googleProfile.picture || null,
               emailVerified: new Date(),
+              role: "USER",
             }
           })
         } else if (!user.emailVerified) {
@@ -84,6 +86,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
       return true
+    },
+async jwt({ token, user }) {
+  if (user) {
+    token.role = user.role
+    token.id = user.id
+  }
+  
+  // Siempre actualizar el rol desde la BD
+  if (token.email) {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: token.email as string },
+      select: { role: true }
+    })
+    if (dbUser) {
+      token.role = dbUser.role
+    }
+  }
+  
+  return token
+},
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.role = token.role as string
+      }
+      return session
     },
   },
   pages: {

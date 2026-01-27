@@ -34,6 +34,25 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
+  const isAdminRoute = adminRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  // Si intenta acceder a ruta de admin sin ser admin o super_admin → dashboard
+  if (isAdminRoute) {
+    console.log("Token role:", token?.role);
+    if (!isLoggedIn) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    
+    if (token?.role !== "ADMIN" && token?.role !== "SUPER_ADMIN") {
+      console.log("Redirecting to dashboard - role not allowed", token?.role);
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   // Si intenta acceder a ruta protegida sin auth → login
   if (isProtectedRoute && !isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
