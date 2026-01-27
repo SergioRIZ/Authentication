@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { BCRYPT_SALT_ROUNDS } from "@/lib/constants";
 
 const passwordSchema = z
   .string()
@@ -24,6 +26,16 @@ const changePasswordSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 attempts per IP per 15 minutes
+    const ip = getClientIp(request);
+    const rl = rateLimit(`change-password:${ip}`, { maxRequests: 5, windowSeconds: 900 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta de nuevo más tarde." },
+        { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+      );
+    }
+
     const session = await auth();
 
     if (!session?.user?.email) {
@@ -68,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     // Hash de la nueva contraseña
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
 
     // Actualizar contraseña
     await prisma.user.update({
@@ -88,7 +100,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Error cambiando contraseña:", error);
+    console.error("Change-password error");
     return NextResponse.json(
       { error: "Error al cambiar la contraseña" },
       { status: 500 }

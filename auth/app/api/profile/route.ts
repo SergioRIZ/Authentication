@@ -5,13 +5,21 @@ import { z } from "zod";
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(50).optional(),
-  image: z.string().url().optional().nullable(),
+  image: z
+    .string()
+    .url()
+    .refine(
+      (url) => url.startsWith("https://"),
+      "Solo se permiten URLs HTTPS para imágenes de perfil"
+    )
+    .optional()
+    .nullable(),
 });
 
 export async function PATCH(request: Request) {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: "No autorizado" },
@@ -45,7 +53,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    console.error("Error actualizando perfil:", error);
+    console.error("Profile update error");
     return NextResponse.json(
       { error: "Error al actualizar el perfil" },
       { status: 500 }
@@ -56,7 +64,7 @@ export async function PATCH(request: Request) {
 export async function GET() {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: "No autorizado" },
@@ -84,7 +92,7 @@ export async function GET() {
 
     return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
-    console.error("Error obteniendo perfil:", error);
+    console.error("Profile fetch error");
     return NextResponse.json(
       { error: "Error al obtener el perfil" },
       { status: 500 }

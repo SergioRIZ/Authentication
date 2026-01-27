@@ -49,13 +49,13 @@ export async function sendPasswordResetEmail(
     });
 
     if (error) {
-      console.error('Error sending email:', error);
+      console.error('Password reset email send failed');
       return { success: false, error };
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Password reset email send failed');
     return { success: false, error };
   }
 }
@@ -104,13 +104,13 @@ export async function sendVerificationEmail(
     });
 
     if (error) {
-      console.error('Error sending verification email:', error);
+      console.error('Verification email send failed');
       return { success: false, error };
     }
 
     return { success: true, data };
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('Verification email send failed');
     return { success: false, error };
   }
 }

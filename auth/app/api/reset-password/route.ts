@@ -3,9 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { BCRYPT_SALT_ROUNDS } from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 reset attempts per IP per 15 minutes
+    const ip = getClientIp(request);
+    const rl = rateLimit(`reset-password:${ip}`, { maxRequests: 5, windowSeconds: 900 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta de nuevo más tarde." },
+        { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+      );
+    }
+
     const body = await request.json();
     const { token, password } = resetPasswordSchema.parse(body);
 
@@ -36,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     // Hash de la nueva contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
     // Actualizar contraseña y eliminar token
     await prisma.$transaction([
@@ -61,7 +73,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Error en reset-password:", error);
+    console.error("Reset-password error");
     return NextResponse.json(
       { error: "Error al restablecer la contraseña" },
       { status: 500 }

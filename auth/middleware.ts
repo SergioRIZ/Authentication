@@ -8,12 +8,21 @@ const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 // Rutas solo para usuarios NO autenticados
 const authRoutes = ["/login", "/register"];
 
+// Validate callbackUrl to prevent open redirect attacks
+function isSafeCallbackUrl(pathname: string): boolean {
+  return (
+    pathname.startsWith("/") &&
+    !pathname.startsWith("//") &&
+    !pathname.includes("://")
+  );
+}
+
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ 
-    req: request, 
-    secret: process.env.NEXTAUTH_SECRET 
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET
   });
-  
+
   const { pathname } = request.nextUrl;
   const isLoggedIn = !!token;
 
@@ -28,7 +37,9 @@ export async function middleware(request: NextRequest) {
   // Si intenta acceder a ruta protegida sin auth → login
   if (isProtectedRoute && !isLoggedIn) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
+    if (isSafeCallbackUrl(pathname)) {
+      loginUrl.searchParams.set("callbackUrl", pathname);
+    }
     return NextResponse.redirect(loginUrl);
   }
 
@@ -41,5 +52,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/login", "/register"],
 };
