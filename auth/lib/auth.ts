@@ -1,4 +1,5 @@
 import NextAuth from "next-auth"
+import type { GoogleProfile } from "next-auth/providers/google"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
@@ -20,8 +21,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
+        // Normalize email for consistent lookups
+        const normalizedEmail = (credentials.email as string).toLowerCase().trim()
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string }
+          where: { email: normalizedEmail }
         })
 
         if (!user || !user.password) {
@@ -55,17 +59,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ account, profile }) {
       if (account?.provider === "google" && profile?.email) {
+        const googleProfile = profile as GoogleProfile
+        const normalizedEmail = profile.email.toLowerCase().trim()
+
         const user = await prisma.user.findUnique({
-          where: { email: profile.email }
+          where: { email: normalizedEmail }
         })
 
         if (!user) {
           // Crear usuario con email ya verificado (viene de Google)
           await prisma.user.create({
             data: {
-              email: profile.email,
+              email: normalizedEmail,
               name: profile.name || null,
-              image: (profile as any).picture || null,
+              image: googleProfile.picture || null,
               emailVerified: new Date(),
               role: "USER",
             }
@@ -73,7 +80,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } else if (!user.emailVerified) {
           // Si el usuario existe pero no estaba verificado, verificarlo
           await prisma.user.update({
-            where: { email: profile.email },
+            where: { email: normalizedEmail },
             data: { emailVerified: new Date() }
           })
         }

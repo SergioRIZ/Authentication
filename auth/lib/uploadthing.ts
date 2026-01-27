@@ -10,9 +10,7 @@ export const ourFileRouter = {
       if (!session?.user?.email) throw new Error("No autorizado");
       return { userEmail: session.user.email };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
-      console.log("Upload completo para:", metadata.userEmail);
-      console.log("URL del archivo:", file.url);
+    .onUploadComplete(async ({ file }) => {
       return { url: file.url };
     }),
 } satisfies FileRouter;

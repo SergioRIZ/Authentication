@@ -4,15 +4,32 @@ import { forgotPasswordSchema } from "@/lib/validations/auth";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  PASSWORD_RESET_TOKEN_EXPIRY_MS,
+  TOKEN_BYTE_LENGTH,
+} from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 3 forgot-password attempts per IP per 15 minutes
+    const ip = getClientIp(request);
+    const rl = rateLimit(`forgot-password:${ip}`, { maxRequests: 3, windowSeconds: 900 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Demasiados intentos. Intenta de nuevo más tarde." },
+        { status: 429, headers: { "Retry-After": String(rl.resetInSeconds) } }
+      );
+    }
+
     const body = await request.json();
     const { email } = forgotPasswordSchema.parse(body);
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Buscar usuario
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: normalizedEmail }
     });
 
     // Siempre responder igual para evitar enumeration attacks
@@ -36,8 +53,8 @@ export async function POST(request: Request) {
     });
 
     // Crear nuevo token
-    const token = randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    const token = randomBytes(TOKEN_BYTE_LENGTH).toString("hex");
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_EXPIRY_MS);
 
     await prisma.passwordResetToken.create({
       data: {
@@ -50,8 +67,8 @@ export async function POST(request: Request) {
     // Enviar email
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
-    
-    await sendPasswordResetEmail(email, resetUrl);
+
+    await sendPasswordResetEmail(normalizedEmail, resetUrl);
 
     return successResponse;
   } catch (error) {
@@ -62,7 +79,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Error en forgot-password:", error);
+    console.error("Forgot-password error");
     return NextResponse.json(
       { error: "Error al procesar la solicitud" },
       { status: 500 }
