@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import ChangePasswordForm from "@/components/settings/change-password-form";
 import DeleteAccountButton from "@/components/settings/delete-account-button";
+import TwoFactorSetup from "@/components/settings/two-factor-setup";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -36,7 +37,27 @@ export default async function SettingsPage() {
       </nav>
 
       <main className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        {/* Cambiar contraseña */}
+        {/* Two-Factor Authentication */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Autenticación de dos factores (2FA)
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Añade una capa adicional de seguridad a tu cuenta usando una app de autenticación.
+          </p>
+          {hasPassword ? (
+            <TwoFactorSetup />
+          ) : (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                La autenticación de dos factores solo está disponible para cuentas con contraseña.
+                Tu cuenta usa inicio de sesión con Google.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Change password */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             Cambiar contraseña
@@ -56,7 +77,7 @@ export default async function SettingsPage() {
           )}
         </div>
 
-        {/* Zona de peligro */}
+        {/* Danger zone */}
         <div className="bg-white rounded-lg shadow p-6 border border-red-200">
           <h2 className="text-xl font-bold text-red-600 mb-2">
             Zona de peligro

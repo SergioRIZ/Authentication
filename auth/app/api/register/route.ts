@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
 import { sendVerificationEmail } from "@/lib/email";
+import { validateEmailForRegistration } from "@/lib/email-validation";
+import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 import { z } from "zod";
@@ -16,7 +18,7 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 5 registration attempts per IP per 15 minutes
     const ip = getClientIp(request);
-    const rl = rateLimit(`register:${ip}`, { maxRequests: 5, windowSeconds: 900 });
+    const rl = await rateLimit(`register:${ip}`, { maxRequests: 5, windowSeconds: 900 });
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "Demasiados intentos. Intenta de nuevo más tarde." },
@@ -25,14 +27,21 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-
-    // Validar con Zod
     const validatedData = registerSchema.parse(body);
 
-    // Normalize email to lowercase to prevent duplicate accounts
+    // Normalize email
     const normalizedEmail = validatedData.email.toLowerCase().trim();
 
-    // Verificar si el usuario ya existe
+    // Validate email domain (disposable + MX check)
+    const emailValidation = await validateEmailForRegistration(normalizedEmail);
+    if (!emailValidation.valid) {
+      return NextResponse.json(
+        { error: emailValidation.reason },
+        { status: 400 }
+      );
+    }
+
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail }
     });
@@ -44,10 +53,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(validatedData.password, BCRYPT_SALT_ROUNDS);
 
-    // Crear usuario (sin verificar)
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
@@ -57,37 +64,36 @@ export async function POST(request: Request) {
       },
     });
 
-    // Crear token de verificación
+    // Create verification token
     const token = randomBytes(TOKEN_BYTE_LENGTH).toString("hex");
     const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRY_MS);
 
     await prisma.emailVerificationToken.create({
-      data: {
-        token,
-        userId: user.id,
-        expiresAt,
-      }
+      data: { token, userId: user.id, expiresAt }
     });
 
-    // Enviar email de verificación
+    // Send verification email
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const verifyUrl = `${baseUrl}/verify-email?token=${token}`;
-
     await sendVerificationEmail(normalizedEmail, verifyUrl);
+
+    // Audit log
+    await logAuditEvent({
+      userId: user.id,
+      action: "REGISTER",
+      details: "Registro con email y contraseña",
+      ipAddress: getAuditIp(request),
+      userAgent: getAuditUserAgent(request),
+    });
 
     return NextResponse.json(
       {
         message: "Usuario creado. Revisa tu email para verificar tu cuenta.",
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        }
+        user: { id: user.id, email: user.email, name: user.name }
       },
       { status: 201 }
     );
   } catch (error) {
-    // Errores de validación de Zod
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Datos inválidos", details: error.errors },

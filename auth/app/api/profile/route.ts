@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { z } from "zod";
 
 const updateProfileSchema = z.object({
@@ -21,10 +22,7 @@ export async function PATCH(request: Request) {
     const session = await auth();
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -36,12 +34,14 @@ export async function PATCH(request: Request) {
         ...(validatedData.name !== undefined && { name: validatedData.name }),
         ...(validatedData.image !== undefined && { image: validatedData.image }),
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        image: true,
-      },
+      select: { id: true, email: true, name: true, image: true },
+    });
+
+    await logAuditEvent({
+      userId: user.id,
+      action: "PROFILE_UPDATED",
+      ipAddress: getAuditIp(request),
+      userAgent: getAuditUserAgent(request),
     });
 
     return NextResponse.json({ user }, { status: 200 });
@@ -66,10 +66,7 @@ export async function GET() {
     const session = await auth();
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -84,10 +81,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
     return NextResponse.json({ user }, { status: 200 });

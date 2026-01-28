@@ -12,3 +12,9 @@ export const PASSWORD_RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 
 /** Token byte length for crypto.randomBytes */
 export const TOKEN_BYTE_LENGTH = 32;
+
+/** Maximum failed login attempts before account lockout */
+export const MAX_FAILED_LOGIN_ATTEMPTS = 5;
+
+/** Account lockout duration in milliseconds (15 minutes) */
+export const ACCOUNT_LOCKOUT_DURATION_MS = 15 * 60 * 1000;

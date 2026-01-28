@@ -4,6 +4,12 @@ import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
+import { verifyTwoFactorCode } from "./two-factor"
+import { logAuditEvent } from "./audit"
+import {
+  MAX_FAILED_LOGIN_ATTEMPTS,
+  ACCOUNT_LOCKOUT_DURATION_MS,
+} from "./constants"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -14,37 +20,130 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        totpCode: { label: "2FA Code", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
 
-        // Normalize email for consistent lookups
         const normalizedEmail = (credentials.email as string).toLowerCase().trim()
 
         const user = await prisma.user.findUnique({
-          where: { email: normalizedEmail }
-        })
+          where: { email: normalizedEmail },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            password: true,
+            role: true,
+            emailVerified: true,
+            twoFactorEnabled: true,
+            twoFactorSecret: true,
+            failedLoginAttempts: true,
+            lockedUntil: true,
+          },
+        }) as any
 
         if (!user || !user.password) {
           return null
         }
 
-        // Verificar si el email está verificado
+        // Check account lockout
+        if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+          await logAuditEvent({
+            userId: user.id,
+            action: "LOGIN_BLOCKED_LOCKOUT",
+            details: `Cuenta bloqueada hasta ${new Date(user.lockedUntil).toISOString()}`,
+          })
+          throw new Error("ACCOUNT_LOCKED")
+        }
+
+        // If account was locked but lockout has expired, unlock it
+        if (user.lockedUntil && new Date(user.lockedUntil) <= new Date()) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockedUntil: null } as any,
+          })
+          await logAuditEvent({
+            userId: user.id,
+            action: "ACCOUNT_UNLOCKED",
+            details: "Desbloqueo automático por expiración del período de bloqueo",
+          })
+        }
+
+        // Verify email
         if (!user.emailVerified) {
           throw new Error("EMAIL_NOT_VERIFIED")
         }
 
+        // Verify password
         const isValid = await bcrypt.compare(
           credentials.password as string,
           user.password
         )
 
         if (!isValid) {
+          // Increment failed attempts
+          const newAttempts = (user.failedLoginAttempts || 0) + 1
+          const updateData: any = { failedLoginAttempts: newAttempts }
+
+          if (newAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
+            updateData.lockedUntil = new Date(Date.now() + ACCOUNT_LOCKOUT_DURATION_MS)
+            await logAuditEvent({
+              userId: user.id,
+              action: "ACCOUNT_LOCKED",
+              details: `Cuenta bloqueada tras ${newAttempts} intentos fallidos`,
+            })
+          }
+
+          await prisma.user.update({
+            where: { id: user.id },
+            data: updateData,
+          })
+
+          await logAuditEvent({
+            userId: user.id,
+            action: "LOGIN_FAILED",
+            details: `Contraseña incorrecta (intento ${newAttempts}/${MAX_FAILED_LOGIN_ATTEMPTS})`,
+          })
+
           return null
         }
+
+        // Check 2FA
+        if (user.twoFactorEnabled && user.twoFactorSecret) {
+          const totpCode = credentials.totpCode as string | undefined
+
+          if (!totpCode) {
+            throw new Error("TWO_FACTOR_REQUIRED")
+          }
+
+          const isValidTotp = verifyTwoFactorCode(user.twoFactorSecret, totpCode)
+          if (!isValidTotp) {
+            await logAuditEvent({
+              userId: user.id,
+              action: "TWO_FACTOR_FAILED",
+              details: "Código 2FA incorrecto durante el inicio de sesión",
+            })
+            throw new Error("TWO_FACTOR_INVALID")
+          }
+        }
+
+        // Successful login — reset failed attempts
+        if (user.failedLoginAttempts > 0) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockedUntil: null } as any,
+          })
+        }
+
+        await logAuditEvent({
+          userId: user.id,
+          action: "LOGIN_SUCCESS",
+        })
 
         return {
           id: user.id,
@@ -67,8 +166,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         })
 
         if (!user) {
-          // Crear usuario con email ya verificado (viene de Google)
-          await prisma.user.create({
+          const newUser = await prisma.user.create({
             data: {
               email: normalizedEmail,
               name: profile.name || null,
@@ -77,35 +175,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               role: "USER",
             }
           })
+          await logAuditEvent({
+            userId: newUser.id,
+            action: "REGISTER",
+            details: "Registro mediante Google OAuth",
+          })
         } else if (!user.emailVerified) {
-          // Si el usuario existe pero no estaba verificado, verificarlo
           await prisma.user.update({
             where: { email: normalizedEmail },
             data: { emailVerified: new Date() }
           })
         }
+
+        await logAuditEvent({
+          userId: user?.id,
+          action: "LOGIN_SUCCESS",
+          details: "Inicio de sesión con Google",
+        })
       }
       return true
     },
-async jwt({ token, user }) {
-  if (user) {
-    token.role = user.role
-    token.id = user.id
-  }
-  
-  // Siempre actualizar el rol desde la BD
-  if (token.email) {
-    const dbUser = await prisma.user.findUnique({
-      where: { email: token.email as string },
-      select: { role: true }
-    })
-    if (dbUser) {
-      token.role = dbUser.role
-    }
-  }
-  
-  return token
-},
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role
+        token.id = user.id
+      }
+
+      // Always refresh role from DB
+      if (token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email as string },
+          select: { role: true }
+        })
+        if (dbUser) {
+          token.role = dbUser.role
+        }
+      }
+
+      return token
+    },
     async session({ session, token }) {
       if (session.user) {
         session.user.role = token.role as string

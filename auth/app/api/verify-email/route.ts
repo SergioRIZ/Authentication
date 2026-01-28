@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { z } from "zod";
 
@@ -9,9 +10,8 @@ const verifyEmailSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    // Rate limit: 10 verification attempts per IP per 15 minutes
     const ip = getClientIp(request);
-    const rl = rateLimit(`verify-email:${ip}`, { maxRequests: 10, windowSeconds: 900 });
+    const rl = await rateLimit(`verify-email:${ip}`, { maxRequests: 10, windowSeconds: 900 });
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "Demasiados intentos. Intenta de nuevo más tarde." },
@@ -22,7 +22,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { token } = verifyEmailSchema.parse(body);
 
-    // Buscar token válido
     const verificationToken = await prisma.emailVerificationToken.findUnique({
       where: { token },
       include: { user: true }
@@ -35,20 +34,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verificar expiración
     if (verificationToken.expiresAt < new Date()) {
-      // Eliminar token expirado
       await prisma.emailVerificationToken.delete({
         where: { id: verificationToken.id }
       });
-
       return NextResponse.json(
         { error: "El enlace ha expirado. Solicita uno nuevo." },
         { status: 400 }
       );
     }
 
-    // Verificar email y eliminar token
     await prisma.$transaction([
       prisma.user.update({
         where: { id: verificationToken.userId },
@@ -58,6 +53,13 @@ export async function POST(request: Request) {
         where: { id: verificationToken.id }
       })
     ]);
+
+    await logAuditEvent({
+      userId: verificationToken.userId,
+      action: "EMAIL_VERIFIED",
+      ipAddress: getAuditIp(request),
+      userAgent: getAuditUserAgent(request),
+    });
 
     return NextResponse.json(
       { message: "Email verificado correctamente" },

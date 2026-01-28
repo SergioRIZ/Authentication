@@ -1,51 +1,137 @@
 /**
- * Simple in-memory rate limiter for API routes.
+ * Hybrid rate limiter: uses Redis (via @upstash/ratelimit) when UPSTASH_REDIS_REST_URL
+ * is configured, otherwise falls back to an in-memory store.
  *
- * For production at scale, replace with a Redis-backed implementation
- * (e.g. @upstash/ratelimit) to work across multiple instances.
+ * For production at scale, configure Upstash Redis environment variables
+ * so rate limits persist across restarts and work across multiple instances.
  */
+
+import { Redis } from "@upstash/redis";
+import { Ratelimit } from "@upstash/ratelimit";
+
+// ─── In-memory fallback ──────────────────────────────────────────────
 
 interface RateLimitEntry {
   count: number;
   resetTime: number;
 }
 
-const store = new Map<string, RateLimitEntry>();
+const memoryStore = new Map<string, RateLimitEntry>();
 
 // Clean up expired entries periodically to prevent memory leaks
-const CLEANUP_INTERVAL_MS = 60 * 1000; // 1 minute
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now > entry.resetTime) {
-      store.delete(key);
+const CLEANUP_INTERVAL_MS = 60 * 1000;
+if (typeof setInterval !== "undefined") {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of memoryStore) {
+      if (now > entry.resetTime) {
+        memoryStore.delete(key);
+      }
+    }
+  }, CLEANUP_INTERVAL_MS);
+}
+
+// ─── Redis client (lazy-initialized) ────────────────────────────────
+
+let redisClient: Redis | null = null;
+let redisAvailable: boolean | null = null;
+
+function getRedisClient(): Redis | null {
+  if (redisAvailable === false) return null;
+
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redisAvailable = false;
+    return null;
+  }
+
+  if (!redisClient) {
+    try {
+      redisClient = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+      redisAvailable = true;
+    } catch {
+      redisAvailable = false;
+      return null;
     }
   }
-}, CLEANUP_INTERVAL_MS);
+  return redisClient;
+}
 
-interface RateLimitOptions {
+// Cache of Ratelimit instances per (maxRequests, windowSeconds) combination
+const ratelimitInstances = new Map<string, Ratelimit>();
+
+function getRedisRateLimiter(maxRequests: number, windowSeconds: number): Ratelimit | null {
+  const redis = getRedisClient();
+  if (!redis) return null;
+
+  const key = `${maxRequests}:${windowSeconds}`;
+  let limiter = ratelimitInstances.get(key);
+  if (!limiter) {
+    limiter = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(maxRequests, `${windowSeconds} s`),
+      analytics: false,
+      prefix: "rl",
+    });
+    ratelimitInstances.set(key, limiter);
+  }
+  return limiter;
+}
+
+// ─── Public interface ───────────────────────────────────────────────
+
+export interface RateLimitOptions {
   /** Maximum number of requests allowed in the window */
   maxRequests: number;
   /** Time window in seconds */
   windowSeconds: number;
 }
 
-interface RateLimitResult {
+export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   resetInSeconds: number;
 }
 
-export function rateLimit(
+/**
+ * Rate-limit an action by identifier.
+ * Uses Redis when available, otherwise falls back to in-memory.
+ */
+export async function rateLimit(
+  identifier: string,
+  options: RateLimitOptions
+): Promise<RateLimitResult> {
+  // Try Redis first
+  const redisLimiter = getRedisRateLimiter(options.maxRequests, options.windowSeconds);
+  if (redisLimiter) {
+    try {
+      const result = await redisLimiter.limit(identifier);
+      return {
+        allowed: result.success,
+        remaining: result.remaining,
+        resetInSeconds: Math.ceil((result.reset - Date.now()) / 1000),
+      };
+    } catch {
+      // Redis failed — fall through to memory
+      console.warn("Redis rate limit failed, falling back to in-memory");
+    }
+  }
+
+  // In-memory fallback
+  return rateLimitMemory(identifier, options);
+}
+
+function rateLimitMemory(
   identifier: string,
   options: RateLimitOptions
 ): RateLimitResult {
   const now = Date.now();
-  const entry = store.get(identifier);
+  const entry = memoryStore.get(identifier);
 
   if (!entry || now > entry.resetTime) {
-    // First request or window expired — start a new window
-    store.set(identifier, {
+    memoryStore.set(identifier, {
       count: 1,
       resetTime: now + options.windowSeconds * 1000,
     });
@@ -57,15 +143,10 @@ export function rateLimit(
   }
 
   entry.count++;
-
   const resetInSeconds = Math.ceil((entry.resetTime - now) / 1000);
 
   if (entry.count > options.maxRequests) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetInSeconds,
-    };
+    return { allowed: false, remaining: 0, resetInSeconds };
   }
 
   return {
@@ -84,6 +165,5 @@ export function getClientIp(request: Request): string {
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  // Fallback — in production behind a proxy this header should always exist
   return "unknown";
 }
