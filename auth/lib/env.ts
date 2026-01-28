@@ -30,4 +30,8 @@ export const env = {
   RESEND_API_KEY: requireEnv("RESEND_API_KEY"),
   FROM_EMAIL: optionalEnv("FROM_EMAIL", "onboarding@resend.dev"),
   APP_NAME: optionalEnv("APP_NAME", "Auth App"),
+
+  // Optional: Redis for rate limiting (Upstash)
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || "",
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || "",
 } as const;

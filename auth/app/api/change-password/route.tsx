@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -26,9 +27,8 @@ const changePasswordSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    // Rate limit: 5 attempts per IP per 15 minutes
     const ip = getClientIp(request);
-    const rl = rateLimit(`change-password:${ip}`, { maxRequests: 5, windowSeconds: 900 });
+    const rl = await rateLimit(`change-password:${ip}`, { maxRequests: 5, windowSeconds: 900 });
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "Demasiados intentos. Intenta de nuevo más tarde." },
@@ -37,31 +37,22 @@ export async function POST(request: Request) {
     }
 
     const session = await auth();
-
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const body = await request.json();
     const { currentPassword, newPassword } = changePasswordSchema.parse(body);
 
-    // Obtener usuario con contraseña
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, password: true },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
-    // Si el usuario no tiene contraseña (login con Google)
     if (!user.password) {
       return NextResponse.json(
         { error: "Tu cuenta usa inicio de sesión con Google. No puedes cambiar la contraseña." },
@@ -69,9 +60,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verificar contraseña actual
     const isValid = await bcrypt.compare(currentPassword, user.password);
-
     if (!isValid) {
       return NextResponse.json(
         { error: "La contraseña actual es incorrecta" },
@@ -79,13 +68,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash de la nueva contraseña
     const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
-
-    // Actualizar contraseña
     await prisma.user.update({
       where: { id: user.id },
       data: { password: hashedPassword },
+    });
+
+    await logAuditEvent({
+      userId: user.id,
+      action: "PASSWORD_CHANGED",
+      ipAddress: getAuditIp(request),
+      userAgent: getAuditUserAgent(request),
     });
 
     return NextResponse.json(

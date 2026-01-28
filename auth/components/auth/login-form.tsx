@@ -14,11 +14,16 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered");
   const reset = searchParams.get("reset");
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof LoginInput | "root", string>>>({});
   const [showResendLink, setShowResendLink] = useState(false);
+
+  // 2FA state
+  const [needs2FA, setNeeds2FA] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
+  const [savedCredentials, setSavedCredentials] = useState<{ email: string; password: string } | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,7 +37,7 @@ export default function LoginForm() {
       password: formData.get("password") as string,
     };
 
-    // Validación cliente con Zod
+    // Client-side validation
     try {
       loginSchema.parse(data);
     } catch (error) {
@@ -49,7 +54,6 @@ export default function LoginForm() {
       }
     }
 
-    // Iniciar sesión con NextAuth
     try {
       const result = await signIn("credentials", {
         email: data.email,
@@ -61,6 +65,15 @@ export default function LoginForm() {
         if (result.error.includes("EMAIL_NOT_VERIFIED")) {
           setErrors({ root: "Debes verificar tu email antes de iniciar sesión." });
           setShowResendLink(true);
+        } else if (result.error.includes("TWO_FACTOR_REQUIRED")) {
+          // User has 2FA enabled — show TOTP input
+          setNeeds2FA(true);
+          setSavedCredentials(data);
+          setErrors({});
+        } else if (result.error.includes("TWO_FACTOR_INVALID")) {
+          setErrors({ root: "Código 2FA incorrecto. Inténtalo de nuevo." });
+        } else if (result.error.includes("ACCOUNT_LOCKED")) {
+          setErrors({ root: "Tu cuenta está temporalmente bloqueada por demasiados intentos fallidos. Inténtalo en 15 minutos." });
         } else {
           setErrors({ root: "Email o contraseña incorrectos" });
         }
@@ -68,7 +81,41 @@ export default function LoginForm() {
         return;
       }
 
-      // Login exitoso - redirigir al dashboard
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      setErrors({ root: "Error de conexión" });
+      setIsLoading(false);
+    }
+  }
+
+  async function onSubmit2FA(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!savedCredentials) return;
+
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const result = await signIn("credentials", {
+        email: savedCredentials.email,
+        password: savedCredentials.password,
+        totpCode,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        if (result.error.includes("TWO_FACTOR_INVALID")) {
+          setErrors({ root: "Código 2FA incorrecto. Inténtalo de nuevo." });
+        } else if (result.error.includes("TWO_FACTOR_REQUIRED")) {
+          setErrors({ root: "Código 2FA requerido." });
+        } else {
+          setErrors({ root: "Error de autenticación" });
+        }
+        setIsLoading(false);
+        return;
+      }
+
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
@@ -80,6 +127,63 @@ export default function LoginForm() {
   async function handleGoogleSignIn() {
     setIsGoogleLoading(true);
     await signIn("google", { callbackUrl: "/dashboard" });
+  }
+
+  // 2FA verification screen
+  if (needs2FA) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Verificación en dos pasos</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Ingresa el código de tu app de autenticación
+          </p>
+        </div>
+
+        <form onSubmit={onSubmit2FA} className="space-y-4">
+          {errors.root && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              {errors.root}
+            </div>
+          )}
+
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            value={totpCode}
+            onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+            placeholder="000000"
+            className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            autoFocus
+            disabled={isLoading}
+          />
+
+          <Button type="submit" fullWidth isLoading={isLoading} disabled={totpCode.length !== 6}>
+            Verificar
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setNeeds2FA(false);
+              setSavedCredentials(null);
+              setTotpCode("");
+              setErrors({});
+            }}
+            className="w-full text-sm text-gray-500 hover:text-gray-700"
+          >
+            Volver al inicio de sesión
+          </button>
+        </form>
+      </div>
+    );
   }
 
   return (

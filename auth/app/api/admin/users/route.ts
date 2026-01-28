@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { z } from "zod";
 
-// GET - Listar todos los usuarios
+// GET - List all users
 export async function GET() {
   try {
     const session = await auth();
@@ -12,7 +13,6 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar que es admin o super_admin
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { role: true },
@@ -35,9 +35,9 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       users,
-      currentUserRole: currentUser.role 
+      currentUserRole: currentUser.role
     }, { status: 200 });
   } catch (error) {
     console.error("Error obteniendo usuarios:", error);
@@ -48,7 +48,7 @@ export async function GET() {
   }
 }
 
-// PATCH - Actualizar rol de usuario
+// PATCH - Update user role
 const updateRoleSchema = z.object({
   userId: z.string().min(1),
   role: z.enum(["USER", "ADMIN", "SUPER_ADMIN"]),
@@ -62,7 +62,6 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar rol del usuario actual
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, role: true },
@@ -75,19 +74,16 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { userId, role } = updateRoleSchema.parse(body);
 
-    // Obtener usuario objetivo
     const targetUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true },
+      select: { role: true, email: true },
     });
 
     if (!targetUser) {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
-    // === REGLAS DE PERMISOS ===
-
-    // No permitir que nadie se modifique a sí mismo
+    // Cannot modify own role
     if (userId === currentUser.id) {
       return NextResponse.json(
         { error: "No puedes modificar tu propio rol" },
@@ -95,19 +91,14 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Solo SUPER_ADMIN puede:
-    // - Crear/modificar otros SUPER_ADMIN
-    // - Modificar ADMIN
-    // - Asignar rol SUPER_ADMIN o ADMIN
+    // ADMIN restrictions
     if (currentUser.role === "ADMIN") {
-      // Admin no puede tocar a otros admins o super_admins
       if (targetUser.role === "ADMIN" || targetUser.role === "SUPER_ADMIN") {
         return NextResponse.json(
           { error: "No tienes permisos para modificar a este usuario" },
           { status: 403 }
         );
       }
-      // Admin no puede asignar rol ADMIN o SUPER_ADMIN
       if (role === "ADMIN" || role === "SUPER_ADMIN") {
         return NextResponse.json(
           { error: "No tienes permisos para asignar este rol" },
@@ -119,21 +110,21 @@ export async function PATCH(request: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { role },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
+      select: { id: true, email: true, name: true, role: true },
+    });
+
+    await logAuditEvent({
+      userId: currentUser.id,
+      action: "ROLE_CHANGED",
+      details: `Rol de ${targetUser.email} cambiado de ${targetUser.role} a ${role}`,
+      ipAddress: getAuditIp(request),
+      userAgent: getAuditUserAgent(request),
     });
 
     return NextResponse.json({ user: updatedUser }, { status: 200 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Datos inválidos" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
     }
 
     console.error("Error actualizando rol:", error);
@@ -144,7 +135,7 @@ export async function PATCH(request: Request) {
   }
 }
 
-// DELETE - Eliminar usuario
+// DELETE - Delete user
 export async function DELETE(request: Request) {
   try {
     const session = await auth();
@@ -153,7 +144,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar rol del usuario actual
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, role: true },
@@ -167,13 +157,9 @@ export async function DELETE(request: Request) {
     const userId = searchParams.get("userId");
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "userId requerido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "userId requerido" }, { status: 400 });
     }
 
-    // No permitir que nadie se elimine a sí mismo
     if (userId === currentUser.id) {
       return NextResponse.json(
         { error: "No puedes eliminarte a ti mismo" },
@@ -181,19 +167,15 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Obtener usuario objetivo
     const targetUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true },
+      select: { role: true, email: true },
     });
 
     if (!targetUser) {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
-    // === REGLAS DE ELIMINACIÓN ===
-
-    // ADMIN solo puede eliminar USER
     if (currentUser.role === "ADMIN") {
       if (targetUser.role === "ADMIN" || targetUser.role === "SUPER_ADMIN") {
         return NextResponse.json(
@@ -203,16 +185,17 @@ export async function DELETE(request: Request) {
       }
     }
 
-    // SUPER_ADMIN puede eliminar a cualquiera (excepto a sí mismo, ya verificado)
+    await prisma.user.delete({ where: { id: userId } });
 
-    await prisma.user.delete({
-      where: { id: userId },
+    await logAuditEvent({
+      userId: currentUser.id,
+      action: "ACCOUNT_DELETED",
+      details: `Usuario ${targetUser.email} eliminado por admin`,
+      ipAddress: getAuditIp(request),
+      userAgent: getAuditUserAgent(request),
     });
 
-    return NextResponse.json(
-      { message: "Usuario eliminado" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Usuario eliminado" }, { status: 200 });
   } catch (error) {
     console.error("Error eliminando usuario:", error);
     return NextResponse.json(
