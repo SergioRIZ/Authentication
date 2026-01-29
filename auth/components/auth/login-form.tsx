@@ -37,7 +37,6 @@ export default function LoginForm() {
       password: formData.get("password") as string,
     };
 
-    // Client-side validation
     try {
       loginSchema.parse(data);
     } catch (error) {
@@ -66,7 +65,6 @@ export default function LoginForm() {
           setErrors({ root: "Debes verificar tu email antes de iniciar sesión." });
           setShowResendLink(true);
         } else if (result.error.includes("TWO_FACTOR_REQUIRED")) {
-          // User has 2FA enabled — show TOTP input
           setNeeds2FA(true);
           setSavedCredentials(data);
           setErrors({});
@@ -134,20 +132,20 @@ export default function LoginForm() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">Verificación en dos pasos</h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <h3 className="text-lg font-semibold text-foreground">Verificación en dos pasos</h3>
+          <p className="text-sm text-muted-foreground mt-1">
             Ingresa el código de tu app de autenticación
           </p>
         </div>
 
         <form onSubmit={onSubmit2FA} className="space-y-4">
           {errors.root && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               {errors.root}
             </div>
           )}
@@ -160,7 +158,7 @@ export default function LoginForm() {
             value={totpCode}
             onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
             placeholder="000000"
-            className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-background border border-border text-foreground rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
             autoFocus
             disabled={isLoading}
           />
@@ -177,7 +175,7 @@ export default function LoginForm() {
               setTotpCode("");
               setErrors({});
             }}
-            className="w-full text-sm text-gray-500 hover:text-gray-700"
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Volver al inicio de sesión
           </button>
@@ -189,25 +187,25 @@ export default function LoginForm() {
   return (
     <div className="space-y-6">
       {registered && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-3 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           ¡Cuenta creada! Revisa tu email para verificar tu cuenta.
         </div>
       )}
 
       {reset && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-3 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           ¡Contraseña actualizada! Ya puedes iniciar sesión.
         </div>
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
         {errors.root && (
-          <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             {errors.root}
             {showResendLink && (
               <Link
                 href="/resend-verification"
-                className="block mt-2 text-blue-600 hover:text-blue-500 font-medium"
+                className="block mt-2 text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 Reenviar email de verificación →
               </Link>
@@ -238,7 +236,7 @@ export default function LoginForm() {
         <div className="flex justify-end">
           <Link
             href="/forgot-password"
-            className="text-sm text-blue-600 hover:text-blue-500"
+            className="text-sm text-primary hover:text-primary/80 transition-colors"
           >
             ¿Olvidaste tu contraseña?
           </Link>
@@ -251,10 +249,10 @@ export default function LoginForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
+          <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">O continúa con</span>
+          <span className="px-2 bg-background text-muted-foreground">O continúa con</span>
         </div>
       </div>
 
