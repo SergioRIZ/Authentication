@@ -58,13 +58,13 @@ export default function ChangePasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-3 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           {success}
         </div>
       )}

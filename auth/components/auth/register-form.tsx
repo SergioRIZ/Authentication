@@ -70,7 +70,7 @@ export default function RegisterForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {errors.root && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           {errors.root}
         </div>
       )}

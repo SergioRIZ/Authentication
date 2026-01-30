@@ -122,19 +122,19 @@ export default function AdminUsersTable() {
     switch (role) {
       case "SUPER_ADMIN":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+          <span className="px-2 py-1 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full">
             Super Admin
           </span>
         );
       case "ADMIN":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+          <span className="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full">
             Admin
           </span>
         );
       default:
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+          <span className="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">
             Usuario
           </span>
         );
@@ -144,7 +144,7 @@ export default function AdminUsersTable() {
   if (isLoading) {
     return (
       <div className="p-12 text-center">
-        <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-8 w-8 text-primary mx-auto" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
@@ -154,7 +154,7 @@ export default function AdminUsersTable() {
 
   if (error) {
     return (
-      <div className="p-6 text-center text-red-600">
+      <div className="p-6 text-center text-red-600 dark:text-red-400">
         {error}
       </div>
     );
@@ -163,56 +163,56 @@ export default function AdminUsersTable() {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-gray-50">
+        <thead className="bg-muted/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Usuario
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Email verificado
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Rol
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Registro
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Acciones
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-background divide-y divide-border">
           {users.map((user) => (
-            <tr key={user.id} className="hover:bg-gray-50">
+            <tr key={user.id} className="hover:bg-muted/50 transition-colors">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center gap-3">
                   {user.image ? (
                     <img
                       src={user.image}
                       alt=""
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-border"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-500">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
+                      <span className="text-sm font-medium text-primary">
                         {user.name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-gray-900">{user.name || "Sin nombre"}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
+                    <p className="font-medium text-foreground">{user.name || "Sin nombre"}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {user.emailVerified ? (
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
                     Verificado
                   </span>
                 ) : (
-                  <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                  <span className="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full">
                     Pendiente
                   </span>
                 )}
@@ -223,7 +223,7 @@ export default function AdminUsersTable() {
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value as "USER" | "ADMIN" | "SUPER_ADMIN")}
                     disabled={actionLoading === user.id}
-                    className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-sm border border-border bg-background text-foreground rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     {currentUserRole === "SUPER_ADMIN" ? (
                       <>
@@ -239,7 +239,7 @@ export default function AdminUsersTable() {
                   getRoleBadge(user.role)
                 )}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                 {new Date(user.createdAt).toLocaleDateString("es-ES")}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -247,12 +247,12 @@ export default function AdminUsersTable() {
                   <button
                     onClick={() => handleDelete(user.id, user.email)}
                     disabled={actionLoading === user.id}
-                    className="text-sm text-red-600 hover:text-red-800 font-medium disabled:opacity-50"
+                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium disabled:opacity-50 transition-colors"
                   >
                     {actionLoading === user.id ? "..." : "Eliminar"}
                   </button>
                 ) : (
-                  <span className="text-sm text-gray-400">-</span>
+                  <span className="text-sm text-muted-foreground">-</span>
                 )}
               </td>
             </tr>
@@ -261,7 +261,7 @@ export default function AdminUsersTable() {
       </table>
 
       {users.length === 0 && (
-        <div className="p-6 text-center text-gray-500">
+        <div className="p-6 text-center text-muted-foreground">
           No hay usuarios
         </div>
       )}

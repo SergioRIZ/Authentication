@@ -65,12 +65,12 @@ export default function ProfileImageUpload({
           <img
             src={preview}
             alt="Foto de perfil"
-            className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+            className="w-24 h-24 rounded-full object-cover border-2 border-border"
           />
         ) : (
-          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+          <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
             <svg
-              className="w-12 h-12 text-gray-400"
+              className="w-12 h-12 text-muted-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -84,7 +84,7 @@ export default function ProfileImageUpload({
             </svg>
           </div>
         )}
-        
+
         {isUploading && (
           <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
             <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
@@ -100,23 +100,23 @@ export default function ProfileImageUpload({
         {...getRootProps()}
         className={`
           w-full p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors
-          ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"}
+          ${isDragActive ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}
           ${isUploading ? "pointer-events-none opacity-50" : ""}
         `}
       >
         <input {...getInputProps()} />
         {isDragActive ? (
-          <p className="text-sm text-blue-600">Suelta la imagen aquí...</p>
+          <p className="text-sm text-primary">Suelta la imagen aquí...</p>
         ) : (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Arrastra una imagen o haz clic para seleccionar
           </p>
         )}
-        <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP (máx. 4MB)</p>
+        <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP (máx. 4MB)</p>
       </div>
 
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
       )}
     </div>
   );
