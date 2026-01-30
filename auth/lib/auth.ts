@@ -1,4 +1,4 @@
-import NextAuth from "next-auth"
+import NextAuth, { CredentialsSignin } from "next-auth"
 import type { GoogleProfile } from "next-auth/providers/google"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
@@ -10,6 +10,23 @@ import {
   MAX_FAILED_LOGIN_ATTEMPTS,
   ACCOUNT_LOCKOUT_DURATION_MS,
 } from "./constants"
+
+// Custom error classes for Auth.js
+class TwoFactorRequiredError extends CredentialsSignin {
+  code = "TWO_FACTOR_REQUIRED"
+}
+
+class TwoFactorInvalidError extends CredentialsSignin {
+  code = "TWO_FACTOR_INVALID"
+}
+
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "EMAIL_NOT_VERIFIED"
+}
+
+class AccountLockedError extends CredentialsSignin {
+  code = "ACCOUNT_LOCKED"
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -58,7 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             action: "LOGIN_BLOCKED_LOCKOUT",
             details: `Cuenta bloqueada hasta ${new Date(user.lockedUntil).toISOString()}`,
           })
-          throw new Error("ACCOUNT_LOCKED")
+          throw new AccountLockedError()
         }
 
         // If account was locked but lockout has expired, unlock it
@@ -76,7 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Verify email
         if (!user.emailVerified) {
-          throw new Error("EMAIL_NOT_VERIFIED")
+          throw new EmailNotVerifiedError()
         }
 
         // Verify password
@@ -118,7 +135,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const totpCode = credentials.totpCode as string | undefined
 
           if (!totpCode) {
-            throw new Error("TWO_FACTOR_REQUIRED")
+            throw new TwoFactorRequiredError()
           }
 
           const isValidTotp = verifyTwoFactorCode(user.twoFactorSecret, totpCode)
@@ -128,7 +145,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               action: "TWO_FACTOR_FAILED",
               details: "Código 2FA incorrecto durante el inicio de sesión",
             })
-            throw new Error("TWO_FACTOR_INVALID")
+            throw new TwoFactorInvalidError()
           }
         }
 

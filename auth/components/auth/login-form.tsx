@@ -61,16 +61,19 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        if (result.error.includes("EMAIL_NOT_VERIFIED")) {
+        // Auth.js v5 returns error codes in result.code or result.error
+        const errorCode = result.code || result.error;
+
+        if (errorCode.includes("EMAIL_NOT_VERIFIED")) {
           setErrors({ root: "Debes verificar tu email antes de iniciar sesión." });
           setShowResendLink(true);
-        } else if (result.error.includes("TWO_FACTOR_REQUIRED")) {
+        } else if (errorCode.includes("TWO_FACTOR_REQUIRED")) {
           setNeeds2FA(true);
           setSavedCredentials(data);
           setErrors({});
-        } else if (result.error.includes("TWO_FACTOR_INVALID")) {
+        } else if (errorCode.includes("TWO_FACTOR_INVALID")) {
           setErrors({ root: "Código 2FA incorrecto. Inténtalo de nuevo." });
-        } else if (result.error.includes("ACCOUNT_LOCKED")) {
+        } else if (errorCode.includes("ACCOUNT_LOCKED")) {
           setErrors({ root: "Tu cuenta está temporalmente bloqueada por demasiados intentos fallidos. Inténtalo en 15 minutos." });
         } else {
           setErrors({ root: "Email o contraseña incorrectos" });
@@ -103,9 +106,11 @@ export default function LoginForm() {
       });
 
       if (result?.error) {
-        if (result.error.includes("TWO_FACTOR_INVALID")) {
+        const errorCode = result.code || result.error;
+
+        if (errorCode.includes("TWO_FACTOR_INVALID")) {
           setErrors({ root: "Código 2FA incorrecto. Inténtalo de nuevo." });
-        } else if (result.error.includes("TWO_FACTOR_REQUIRED")) {
+        } else if (errorCode.includes("TWO_FACTOR_REQUIRED")) {
           setErrors({ root: "Código 2FA requerido." });
         } else {
           setErrors({ root: "Error de autenticación" });
