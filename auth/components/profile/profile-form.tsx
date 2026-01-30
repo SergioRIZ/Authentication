@@ -81,7 +81,7 @@ export default function ProfileForm() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
@@ -92,20 +92,20 @@ export default function ProfileForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       {error && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-3 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           {success}
         </div>
       )}
 
       {/* Imagen de perfil */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-foreground mb-3">
           Foto de perfil
         </label>
         <ProfileImageUpload
@@ -126,25 +126,25 @@ export default function ProfileForm() {
 
       {/* Email (solo lectura) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Email
         </label>
         <input
           type="email"
           value={user?.email || ""}
           disabled
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+          className="w-full px-4 py-2.5 border border-border rounded-lg bg-muted text-muted-foreground cursor-not-allowed"
         />
-        <p className="mt-1 text-xs text-gray-500">El email no se puede cambiar</p>
+        <p className="mt-1 text-xs text-muted-foreground">El email no se puede cambiar</p>
       </div>
 
       {/* Fecha de registro */}
       {user?.createdAt && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Miembro desde
           </label>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {new Date(user.createdAt).toLocaleDateString("es-ES", {
               year: "numeric",
               month: "long",

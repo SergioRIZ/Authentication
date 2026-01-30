@@ -112,7 +112,7 @@ export default function TwoFactorSetup() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-4">
-        <svg className="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
@@ -123,12 +123,12 @@ export default function TwoFactorSetup() {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           {error}
         </div>
       )}
       {success && (
-        <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-3 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           {success}
         </div>
       )}
@@ -136,14 +136,14 @@ export default function TwoFactorSetup() {
       {/* Current status */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium text-gray-900">
+          <p className="font-medium text-foreground">
             Estado: {isEnabled ? (
-              <span className="text-green-600">Activado</span>
+              <span className="text-green-600 dark:text-green-400">Activado</span>
             ) : (
-              <span className="text-yellow-600">Desactivado</span>
+              <span className="text-yellow-600 dark:text-yellow-400">Desactivado</span>
             )}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {isEnabled
               ? "Tu cuenta está protegida con autenticación de dos factores."
               : "Activa 2FA para mayor seguridad en tu cuenta."}
@@ -171,13 +171,13 @@ export default function TwoFactorSetup() {
 
       {/* Setup step - show QR code */}
       {step === "setup" && (
-        <div className="space-y-4 border-t pt-4">
+        <div className="space-y-4 border-t border-border pt-4">
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Paso 1: Escanea el código QR</h4>
-            <p className="text-sm text-gray-500 mb-4">
+            <h4 className="font-medium text-foreground mb-2">Paso 1: Escanea el código QR</h4>
+            <p className="text-sm text-muted-foreground mb-4">
               Usa una app de autenticación como Google Authenticator, Authy o 1Password para escanear este código.
             </p>
-            <div className="flex justify-center bg-white p-4 rounded-lg border">
+            <div className="flex justify-center bg-white p-4 rounded-lg border border-border">
               {qrCode && (
                 <img src={qrCode} alt="Código QR para 2FA" className="w-48 h-48" />
               )}
@@ -185,17 +185,17 @@ export default function TwoFactorSetup() {
           </div>
 
           <div>
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-muted-foreground mb-2">
               Si no puedes escanear el código, ingresa esta clave manualmente en tu app:
             </p>
-            <code className="block p-3 bg-gray-100 rounded-lg text-sm font-mono break-all text-center">
+            <code className="block p-3 bg-muted rounded-lg text-sm font-mono break-all text-center text-foreground">
               {secret}
             </code>
           </div>
 
           <form onSubmit={handleVerify} className="space-y-3">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Paso 2: Ingresa el código de verificación</h4>
+              <h4 className="font-medium text-foreground mb-2">Paso 2: Ingresa el código de verificación</h4>
               <input
                 type="text"
                 inputMode="numeric"
@@ -204,7 +204,7 @@ export default function TwoFactorSetup() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                 placeholder="000000"
-                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-background border border-border text-foreground rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                 autoFocus
               />
             </div>
@@ -226,10 +226,10 @@ export default function TwoFactorSetup() {
 
       {/* Disable step */}
       {step === "disable" && (
-        <form onSubmit={handleDisable} className="space-y-3 border-t pt-4">
+        <form onSubmit={handleDisable} className="space-y-3 border-t border-border pt-4">
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Ingresa tu código 2FA para confirmar</h4>
-            <p className="text-sm text-gray-500 mb-3">
+            <h4 className="font-medium text-foreground mb-2">Ingresa tu código 2FA para confirmar</h4>
+            <p className="text-sm text-muted-foreground mb-3">
               Para desactivar 2FA, ingresa un código de tu app de autenticación.
             </p>
             <input
@@ -240,12 +240,12 @@ export default function TwoFactorSetup() {
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               placeholder="000000"
-              className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-background border border-border text-foreground rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
               autoFocus
             />
           </div>
           <div className="flex gap-3">
-            <Button type="submit" variant="outline" isLoading={actionLoading} disabled={code.length !== 6}>
+            <Button type="submit" variant="danger" isLoading={actionLoading} disabled={code.length !== 6}>
               Confirmar desactivación
             </Button>
             <Button

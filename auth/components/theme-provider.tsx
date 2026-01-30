@@ -59,10 +59,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme, mounted]);
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Always provide context, even before mount (with default values)
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
       {children}

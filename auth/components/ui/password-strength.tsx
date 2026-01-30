@@ -37,7 +37,7 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
     if (checks.symbol) score++;
 
     const levels: Record<number, { label: string; color: string }> = {
-      0: { label: "", color: "bg-gray-200" },
+      0: { label: "", color: "bg-muted" },
       1: { label: "Muy débil", color: "bg-red-500" },
       2: { label: "Débil", color: "bg-orange-500" },
       3: { label: "Regular", color: "bg-yellow-500" },
@@ -58,31 +58,31 @@ export default function PasswordStrength({ password }: PasswordStrengthProps) {
           <div
             key={level}
             className={`h-1.5 flex-1 rounded-full transition-colors ${
-              level <= strength.score ? strength.color : "bg-gray-200"
+              level <= strength.score ? strength.color : "bg-muted"
             }`}      />
         ))}
       </div>
 
       {/* Label */}
       <div className="flex justify-between items-center">
-        <span className="text-xs text-gray-600">{strength.label}</span>
+        <span className="text-xs text-muted-foreground">{strength.label}</span>
       </div>
 
       {/* Checklist */}
       <ul className="text-xs space-y-1">
-        <li className={strength.checks.length ? "text-green-600" : "text-gray-400"}>
+        <li className={strength.checks.length ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
           {strength.checks.length ? "✓" : "○"} Mínimo 8 caracteres
         </li>
-        <li className={strength.checks.uppercase ? "text-green-600" : "text-gray-400"}>
+        <li className={strength.checks.uppercase ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
           {strength.checks.uppercase ? "✓" : "○"} Una mayúscula
         </li>
-        <li className={strength.checks.lowercase ? "text-green-600" : "text-gray-400"}>
+        <li className={strength.checks.lowercase ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
           {strength.checks.lowercase ? "✓" : "○"} Una minúscula
         </li>
-        <li className={strength.checks.number ? "text-green-600" : "text-gray-400"}>
+        <li className={strength.checks.number ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
           {strength.checks.number ? "✓" : "○"} Un número
         </li>
-        <li className={strength.checks.symbol ? "text-green-600" : "text-gray-400"}>
+        <li className={strength.checks.symbol ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
           {strength.checks.symbol ? "✓" : "○"} Un símbolo (!@#$%...)
         </li>
       </ul>
