@@ -55,41 +55,52 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(validatedData.password, BCRYPT_SALT_ROUNDS);
 
+    // In development mode, auto-verify accounts
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
         name: validatedData.name,
         password: hashedPassword,
-        emailVerified: null,
+        emailVerified: isDevelopment ? new Date() : null,
       },
     });
 
-    // Create verification token
-    const token = randomBytes(TOKEN_BYTE_LENGTH).toString("hex");
-    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRY_MS);
+    // Only send verification email in production
+    if (!isDevelopment) {
+      // Create verification token
+      const token = randomBytes(TOKEN_BYTE_LENGTH).toString("hex");
+      const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRY_MS);
 
-    await prisma.emailVerificationToken.create({
-      data: { token, userId: user.id, expiresAt }
-    });
+      await prisma.emailVerificationToken.create({
+        data: { token, userId: user.id, expiresAt }
+      });
 
-    // Send verification email
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const verifyUrl = `${baseUrl}/verify-email?token=${token}`;
-    await sendVerificationEmail(normalizedEmail, verifyUrl);
+      // Send verification email
+      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const verifyUrl = `${baseUrl}/verify-email?token=${token}`;
+      await sendVerificationEmail(normalizedEmail, verifyUrl);
+    }
 
     // Audit log
     await logAuditEvent({
       userId: user.id,
       action: "REGISTER",
-      details: "Registro con email y contraseña",
+      details: isDevelopment
+        ? "Registro con email y contraseña (auto-verificado en desarrollo)"
+        : "Registro con email y contraseña",
       ipAddress: getAuditIp(request),
       userAgent: getAuditUserAgent(request),
     });
 
     return NextResponse.json(
       {
-        message: "Usuario creado. Revisa tu email para verificar tu cuenta.",
-        user: { id: user.id, email: user.email, name: user.name }
+        message: isDevelopment
+          ? "Usuario creado y verificado automáticamente (modo desarrollo)."
+          : "Usuario creado. Revisa tu email para verificar tu cuenta.",
+        user: { id: user.id, email: user.email, name: user.name },
+        autoVerified: isDevelopment,
       },
       { status: 201 }
     );
