@@ -13,6 +13,17 @@ enum Role {
   SUPER_ADMIN
 }
 
+enum CustomerCategory {
+  PREMIUM
+  REGULAR
+  OCCASIONAL
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -35,6 +46,10 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   auditLogs               AuditLog[]
+
+  // Customer relationships
+  assignedCustomers Customer[] @relation("CustomerWorkers")
+  createdCustomers  Customer[] @relation("CustomerCreator")
 
   @@map("users")
 }
@@ -75,4 +90,30 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model Customer {
+  id        String           @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  dni       String?          // DNI/NIF
+  address   String?
+  notes     String?
+  category  CustomerCategory @default(REGULAR)
+  status    CustomerStatus   @default(ACTIVE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Who created this customer
+  createdById String
+  createdBy   User   @relation("CustomerCreator", fields: [createdById], references: [id])
+
+  // Workers assigned to this customer (many-to-many)
+  workers User[] @relation("CustomerWorkers")
+
+  @@index([createdById])
+  @@index([status])
+  @@index([category])
+  @@map("customers")
 }
