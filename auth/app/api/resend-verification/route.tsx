@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   try {
     // Rate limit: 3 resend attempts per IP per 15 minutes
     const ip = getClientIp(request);
-    const rl = rateLimit(`resend-verification:${ip}`, { maxRequests: 3, windowSeconds: 900 });
+    const rl = await rateLimit(`resend-verification:${ip}`, { maxRequests: 3, windowSeconds: 900 });
     if (!rl.allowed) {
       return NextResponse.json(
         { error: "Demasiados intentos. Intenta de nuevo más tarde." },
