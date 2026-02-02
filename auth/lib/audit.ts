@@ -20,7 +20,11 @@ export type AuditAction =
   | "PROFILE_UPDATED"
   | "TWO_FACTOR_ENABLED"
   | "TWO_FACTOR_DISABLED"
-  | "TWO_FACTOR_FAILED";
+  | "TWO_FACTOR_FAILED"
+  | "USER_VERIFIED_BY_ADMIN"
+  | "CUSTOMER_CREATED"
+  | "CUSTOMER_UPDATED"
+  | "CUSTOMER_DELETED";
 
 interface AuditLogParams {
   userId?: string | null;
