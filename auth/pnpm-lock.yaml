@@ -33,7 +33,7 @@ importers:
         specifier: ^9.4.1
         version: 9.4.1
       prisma:
-        specifier: ^6.19.1
+        specifier: 6.19.1
         version: 6.19.1(typescript@5.9.3)
       qrcode:
         specifier: ^1.5.4
