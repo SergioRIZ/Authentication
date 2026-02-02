@@ -91,6 +91,60 @@ export default function AdminUsersTable() {
     }
   }
 
+  async function handleVerify(userId: string, email: string) {
+    if (!confirm(`¿Verificar manualmente a ${email}?`)) {
+      return;
+    }
+
+    setActionLoading(userId);
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsers(users.map(u =>
+          u.id === userId ? { ...u, emailVerified: new Date().toISOString() } : u
+        ));
+      } else {
+        alert(data.error || "Error al verificar usuario");
+      }
+    } catch (err) {
+      alert("Error de conexión");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleReject(userId: string, email: string) {
+    if (!confirm(`¿Rechazar y eliminar a ${email}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    setActionLoading(userId);
+    try {
+      const response = await fetch(`/api/admin/users?userId=${userId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsers(users.filter(u => u.id !== userId));
+      } else {
+        alert(data.error || "Error al rechazar usuario");
+      }
+    } catch (err) {
+      alert("Error de conexión");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
   // Determinar si puede editar el rol de un usuario
   function canEditRole(targetRole: string): boolean {
     if (currentUserRole === "SUPER_ADMIN") return true;
@@ -243,17 +297,42 @@ export default function AdminUsersTable() {
                 {new Date(user.createdAt).toLocaleDateString("es-ES")}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
-                {canDelete(user.role) ? (
-                  <button
-                    onClick={() => handleDelete(user.id, user.email)}
-                    disabled={actionLoading === user.id}
-                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium disabled:opacity-50 transition-colors"
-                  >
-                    {actionLoading === user.id ? "..." : "Eliminar"}
-                  </button>
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
+                <div className="flex items-center justify-end gap-2">
+                  {/* Verify/Reject buttons for unverified users */}
+                  {!user.emailVerified && canDelete(user.role) && (
+                    <>
+                      <button
+                        onClick={() => handleVerify(user.id, user.email)}
+                        disabled={actionLoading === user.id}
+                        className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading === user.id ? "..." : "Verificar"}
+                      </button>
+                      <span className="text-muted-foreground">|</span>
+                      <button
+                        onClick={() => handleReject(user.id, user.email)}
+                        disabled={actionLoading === user.id}
+                        className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading === user.id ? "..." : "Rechazar"}
+                      </button>
+                    </>
+                  )}
+                  {/* Delete button for verified users */}
+                  {user.emailVerified && canDelete(user.role) && (
+                    <button
+                      onClick={() => handleDelete(user.id, user.email)}
+                      disabled={actionLoading === user.id}
+                      className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium disabled:opacity-50 transition-colors"
+                    >
+                      {actionLoading === user.id ? "..." : "Eliminar"}
+                    </button>
+                  )}
+                  {/* No actions available */}
+                  {!canDelete(user.role) && (
+                    <span className="text-sm text-muted-foreground">-</span>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
