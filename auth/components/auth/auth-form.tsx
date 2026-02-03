@@ -40,7 +40,7 @@ export default function AuthForm({
               />
             </svg>
           </div>
-          <span className="text-xl font-bold text-foreground">WorkFlow Pro</span>
+          <span className="text-xl font-bold text-foreground">SerTEC</span>
         </Link>
         <ThemeToggle />
       </header>

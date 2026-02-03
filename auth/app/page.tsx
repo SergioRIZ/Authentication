@@ -17,7 +17,7 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-foreground">WorkFlow Pro</span>
+              <span className="text-xl font-bold text-foreground">SerTEC</span>
             </div>
 
             {/* Right side */}
@@ -175,7 +175,7 @@ export default function Home() {
             Listo para optimizar tu negocio?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Unete a miles de empresas que ya confian en WorkFlow Pro para gestionar sus operaciones.
+            Unete a miles de empresas que ya confian en SerTEC para gestionar sus operaciones.
           </p>
           <Link
             href="/register"
@@ -195,10 +195,10 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <span className="text-sm font-medium text-foreground">WorkFlow Pro</span>
+            <span className="text-sm font-medium text-foreground">SerTEC</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} WorkFlow Pro. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} SerTEC. Todos los derechos reservados.
           </p>
         </div>
       </footer>

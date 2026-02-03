@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WorkFlow Pro - Customer & Team Management",
-  description: "Professional platform for managing customers, workers, and business operations efficiently.",
+  title: "SerTEC - Gestión de Clientes y Equipos",
+  description: "Plataforma profesional para gestionar clientes, trabajadores y operaciones de negocio.",
 };
 
 export default function RootLayout({
