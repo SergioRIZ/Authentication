@@ -39,7 +39,7 @@ export function ProtectedNav({ user, signOutAction }: ProtectedNavProps) {
                   />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-foreground hidden sm:inline">WorkFlow Pro</span>
+              <span className="text-xl font-bold text-foreground hidden sm:inline">SerTEC</span>
             </Link>
 
             {/* Navigation links */}
