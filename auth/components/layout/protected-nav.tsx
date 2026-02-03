@@ -56,6 +56,12 @@ export function ProtectedNav({ user, signOutAction }: ProtectedNavProps) {
               >
                 Clientes
               </Link>
+              <Link
+                href="/tasks"
+                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                Tareas
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
