@@ -5,7 +5,7 @@ import { customerSchema, updateCustomerSchema } from "@/lib/validations/customer
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { z } from "zod";
 
-// GET - List all customers
+// GET - List customers (filtered by assignment for regular users)
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -14,12 +14,33 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    // Get current user with role
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    const isAdmin = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const category = searchParams.get("category");
     const search = searchParams.get("search");
 
     const where: any = {};
+
+    // Regular users can only see customers assigned to them
+    if (!isAdmin) {
+      where.workers = {
+        some: {
+          id: currentUser.id,
+        },
+      };
+    }
 
     if (status && (status === "ACTIVE" || status === "INACTIVE")) {
       where.status = status;
@@ -30,11 +51,16 @@ export async function GET(request: Request) {
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { phone: { contains: search, mode: "insensitive" } },
-        { dni: { contains: search, mode: "insensitive" } },
+      where.AND = [
+        ...(where.AND || []),
+        {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+            { phone: { contains: search, mode: "insensitive" } },
+            { dni: { contains: search, mode: "insensitive" } },
+          ],
+        },
       ];
     }
 
@@ -60,7 +86,7 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ customers }, { status: 200 });
+    return NextResponse.json({ customers, isAdmin }, { status: 200 });
   } catch (error) {
     console.error("Error obteniendo clientes:", error);
     return NextResponse.json(

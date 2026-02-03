@@ -26,12 +26,19 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Fetch customer stats
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  const isSuperAdmin = user.role === "SUPER_ADMIN";
+
+  // Filter for regular users - only see assigned customers
+  const customerFilter = isAdmin ? {} : { workers: { some: { id: user.id } } };
+
+  // Fetch customer stats (filtered for regular users)
   const [totalCustomers, activeCustomers, premiumCustomers, recentCustomers] = await Promise.all([
-    prisma.customer.count(),
-    prisma.customer.count({ where: { status: "ACTIVE" } }),
-    prisma.customer.count({ where: { category: "PREMIUM" } }),
+    prisma.customer.count({ where: customerFilter }),
+    prisma.customer.count({ where: { ...customerFilter, status: "ACTIVE" } }),
+    prisma.customer.count({ where: { ...customerFilter, category: "PREMIUM" } }),
     prisma.customer.findMany({
+      where: customerFilter,
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
@@ -41,9 +48,6 @@ export default async function DashboardPage() {
       },
     }),
   ]);
-
-  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
-  const isSuperAdmin = user.role === "SUPER_ADMIN";
 
   async function handleSignOut() {
     "use server";
