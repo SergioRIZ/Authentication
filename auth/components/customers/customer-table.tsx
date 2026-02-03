@@ -5,6 +5,7 @@ interface Worker {
   name: string | null;
   email: string;
   image: string | null;
+  role: string;
 }
 
 interface Customer {
