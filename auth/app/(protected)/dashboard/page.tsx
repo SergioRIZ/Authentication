@@ -29,8 +29,9 @@ export default async function DashboardPage() {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
   const isSuperAdmin = user.role === "SUPER_ADMIN";
 
-  // Filter for regular users - only see assigned customers
+  // Filter for regular users - only see assigned customers/tasks
   const customerFilter = isAdmin ? {} : { workers: { some: { id: user.id } } };
+  const taskFilter = isAdmin ? {} : { OR: [{ workers: { some: { id: user.id } } }, { createdById: user.id }] };
 
   // Fetch customer stats (filtered for regular users)
   const [totalCustomers, activeCustomers, premiumCustomers, recentCustomers] = await Promise.all([
@@ -44,6 +45,26 @@ export default async function DashboardPage() {
       include: {
         workers: {
           select: { id: true, name: true, image: true },
+        },
+      },
+    }),
+  ]);
+
+  // Fetch task stats (filtered for regular users)
+  const [pendingTasks, inProgressTasks, completedTasks, recentTasks] = await Promise.all([
+    prisma.task.count({ where: { ...taskFilter, status: "PENDING" } }),
+    prisma.task.count({ where: { ...taskFilter, status: "IN_PROGRESS" } }),
+    prisma.task.count({ where: { ...taskFilter, status: "COMPLETED" } }),
+    prisma.task.findMany({
+      where: taskFilter,
+      take: 5,
+      orderBy: [{ status: "asc" }, { priority: "desc" }, { createdAt: "desc" }],
+      include: {
+        workers: {
+          select: { id: true, name: true, image: true },
+        },
+        customer: {
+          select: { id: true, name: true },
         },
       },
     }),
@@ -312,6 +333,166 @@ export default async function DashboardPage() {
                         : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                     }`}>
                       {customer.category === "PREMIUM" ? "Premium" : customer.category === "OCCASIONAL" ? "Ocasional" : "Regular"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Task Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mt-8">
+          <div className="bg-background border border-border rounded-xl p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Pendientes</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingTasks}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-background border border-border rounded-xl p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">En Progreso</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{inProgressTasks}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-background border border-border rounded-xl p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Completadas</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{completedTasks}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-background border border-border rounded-xl p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Tareas</p>
+                <p className="text-2xl font-bold text-foreground">{pendingTasks + inProgressTasks + completedTasks}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Tasks */}
+        <div className="bg-background border border-border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Tareas Recientes</h3>
+              <p className="text-sm text-muted-foreground">Control de equipos y progreso</p>
+            </div>
+            <Link
+              href="/tasks"
+              className="px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Ver todas →
+            </Link>
+          </div>
+
+          {recentTasks.length === 0 ? (
+            <div className="p-12 text-center">
+              <svg className="w-12 h-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <p className="text-muted-foreground mb-4">No hay tareas todavía</p>
+              <Link
+                href="/tasks"
+                className="inline-flex px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Crear primera tarea
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {recentTasks.map((task) => (
+                <div key={task.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      task.status === "COMPLETED"
+                        ? "bg-green-100 dark:bg-green-900/30"
+                        : task.status === "IN_PROGRESS"
+                        ? "bg-blue-100 dark:bg-blue-900/30"
+                        : "bg-amber-100 dark:bg-amber-900/30"
+                    }`}>
+                      {task.status === "COMPLETED" ? (
+                        <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : task.status === "IN_PROGRESS" ? (
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <p className={`font-medium ${task.status === "COMPLETED" ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                        {task.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {task.customer ? task.customer.name : "Sin cliente asignado"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {/* Workers */}
+                    {task.workers.length > 0 && (
+                      <div className="flex -space-x-2">
+                        {task.workers.slice(0, 3).map((worker) => (
+                          <div
+                            key={worker.id}
+                            className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-background"
+                            title={worker.name || ""}
+                          >
+                            {worker.image ? (
+                              <img src={worker.image} alt="" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-medium text-primary">
+                                {(worker.name || "?").charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Priority badge */}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      task.priority === "HIGH"
+                        ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                        : task.priority === "MEDIUM"
+                        ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                        : "bg-muted text-muted-foreground"
+                    }`}>
+                      {task.priority === "HIGH" ? "Alta" : task.priority === "MEDIUM" ? "Media" : "Baja"}
                     </span>
                   </div>
                 </div>

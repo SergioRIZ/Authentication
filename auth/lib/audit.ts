@@ -24,7 +24,11 @@ export type AuditAction =
   | "USER_VERIFIED_BY_ADMIN"
   | "CUSTOMER_CREATED"
   | "CUSTOMER_UPDATED"
-  | "CUSTOMER_DELETED";
+  | "CUSTOMER_DELETED"
+  | "TASK_CREATED"
+  | "TASK_UPDATED"
+  | "TASK_DELETED"
+  | "TASK_STATUS_CHANGED";
 
 interface AuditLogParams {
   userId?: string | null;

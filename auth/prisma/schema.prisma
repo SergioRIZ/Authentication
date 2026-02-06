@@ -24,6 +24,18 @@ enum CustomerStatus {
   INACTIVE
 }
 
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -50,6 +62,10 @@ model User {
   // Customer relationships
   assignedCustomers Customer[] @relation("CustomerWorkers")
   createdCustomers  Customer[] @relation("CustomerCreator")
+
+  // Task relationships
+  assignedTasks Task[]   @relation("TaskWorkers")
+  createdTasks  Task[]   @relation("TaskCreator")
 
   @@map("users")
 }
@@ -112,8 +128,42 @@ model Customer {
   // Workers assigned to this customer (many-to-many)
   workers User[] @relation("CustomerWorkers")
 
+  // Tasks linked to this customer
+  tasks Task[]
+
   @@index([createdById])
   @@index([status])
   @@index([category])
   @@map("customers")
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  startDate   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Who created this task
+  createdById String
+  createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id])
+
+  // Workers assigned to this task (many-to-many)
+  workers User[] @relation("TaskWorkers")
+
+  // Optional: Link task to a customer
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([createdById])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([customerId])
+  @@map("tasks")
 }
