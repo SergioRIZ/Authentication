@@ -29,9 +29,9 @@ export default async function DashboardPage() {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
   const isSuperAdmin = user.role === "SUPER_ADMIN";
 
-  // Filter for regular users - only see assigned customers/tasks
-  const customerFilter = isAdmin ? {} : { workers: { some: { id: user.id } } };
-  const taskFilter = isAdmin ? {} : { OR: [{ workers: { some: { id: user.id } } }, { createdById: user.id }] };
+  // All users only see their assigned/created customers and tasks
+  const customerFilter = { OR: [{ workers: { some: { id: user.id } } }, { createdById: user.id }] };
+  const taskFilter = { OR: [{ workers: { some: { id: user.id } } }, { createdById: user.id }] };
 
   // Fetch customer stats (filtered for regular users)
   const [totalCustomers, activeCustomers, premiumCustomers, recentCustomers] = await Promise.all([

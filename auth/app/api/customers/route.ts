@@ -48,7 +48,7 @@ async function validateWorkerAssignment(
   return { valid: true };
 }
 
-// GET - List customers (filtered by assignment for regular users)
+// GET - List customers (filtered by assignment for all users)
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -76,14 +76,11 @@ export async function GET(request: Request) {
 
     const where: any = {};
 
-    // Regular users can only see customers assigned to them
-    if (!isAdmin) {
-      where.workers = {
-        some: {
-          id: currentUser.id,
-        },
-      };
-    }
+    // All users can only see customers assigned to them or created by them
+    where.OR = [
+      { workers: { some: { id: currentUser.id } } },
+      { createdById: currentUser.id },
+    ];
 
     if (status && (status === "ACTIVE" || status === "INACTIVE")) {
       where.status = status;
