@@ -15,9 +15,11 @@ function getAllowedRolesForAssignment(userRole: string): string[] {
 }
 
 // Validate that worker IDs only include users with allowed roles
+// SUPER_ADMIN can also assign to themselves (but not other SUPER_ADMINs)
 async function validateWorkerAssignment(
   workerIds: string[],
-  userRole: string
+  userRole: string,
+  currentUserId: string
 ): Promise<{ valid: boolean; error?: string }> {
   if (!workerIds || workerIds.length === 0) {
     return { valid: true };
@@ -30,6 +32,8 @@ async function validateWorkerAssignment(
     where: {
       id: { in: workerIds },
       role: { notIn: allowedRoles },
+      // SUPER_ADMIN can assign to themselves
+      ...(userRole === "SUPER_ADMIN" ? { NOT: { id: currentUserId } } : {}),
     },
     select: { id: true, role: true, name: true },
   });
@@ -173,7 +177,8 @@ export async function POST(request: Request) {
     if (validatedData.workerIds && validatedData.workerIds.length > 0) {
       const validation = await validateWorkerAssignment(
         validatedData.workerIds,
-        currentUser.role
+        currentUser.role,
+        currentUser.id
       );
       if (!validation.valid) {
         return NextResponse.json({ error: validation.error }, { status: 403 });
@@ -319,7 +324,8 @@ export async function PATCH(request: Request) {
       if (validatedData.workerIds.length > 0) {
         const validation = await validateWorkerAssignment(
           validatedData.workerIds,
-          currentUser.role
+          currentUser.role,
+          currentUser.id
         );
         if (!validation.valid) {
           return NextResponse.json({ error: validation.error }, { status: 403 });

@@ -24,7 +24,7 @@ export async function GET() {
     // Determine which roles the current user can assign work to:
     // - USER can only assign to USER
     // - ADMIN can only assign to USER
-    // - SUPER_ADMIN can assign to USER and ADMIN
+    // - SUPER_ADMIN can assign to USER, ADMIN, and themselves (not other SUPER_ADMIN)
     let allowedRoles: string[] = [];
 
     if (currentUser.role === "SUPER_ADMIN") {
@@ -38,7 +38,11 @@ export async function GET() {
     const workers = await prisma.user.findMany({
       where: {
         emailVerified: { not: null },
-        role: { in: allowedRoles },
+        OR: [
+          { role: { in: allowedRoles } },
+          // SUPER_ADMIN can also assign to themselves
+          ...(currentUser.role === "SUPER_ADMIN" ? [{ id: currentUser.id }] : []),
+        ],
       },
       select: {
         id: true,
