@@ -5,6 +5,44 @@ import { customerSchema, updateCustomerSchema } from "@/lib/validations/customer
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { z } from "zod";
 
+// Helper function to get allowed roles for worker assignment
+function getAllowedRolesForAssignment(userRole: string): string[] {
+  if (userRole === "SUPER_ADMIN") {
+    return ["USER", "ADMIN"];
+  }
+  // Both USER and ADMIN can only assign to USER
+  return ["USER"];
+}
+
+// Validate that worker IDs only include users with allowed roles
+async function validateWorkerAssignment(
+  workerIds: string[],
+  userRole: string
+): Promise<{ valid: boolean; error?: string }> {
+  if (!workerIds || workerIds.length === 0) {
+    return { valid: true };
+  }
+
+  const allowedRoles = getAllowedRolesForAssignment(userRole);
+
+  const invalidWorkers = await prisma.user.findMany({
+    where: {
+      id: { in: workerIds },
+      role: { notIn: allowedRoles },
+    },
+    select: { id: true, role: true, name: true },
+  });
+
+  if (invalidWorkers.length > 0) {
+    return {
+      valid: false,
+      error: "No puedes asignar clientes a usuarios con roles superiores o iguales al tuyo",
+    };
+  }
+
+  return { valid: true };
+}
+
 // GET - List customers (filtered by assignment for regular users)
 export async function GET(request: Request) {
   try {
@@ -107,7 +145,7 @@ export async function POST(request: Request) {
 
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true },
+      select: { id: true, role: true },
     });
 
     if (!currentUser) {
@@ -116,6 +154,17 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const validatedData = customerSchema.parse(body);
+
+    // Validate worker assignments based on role hierarchy
+    if (validatedData.workerIds && validatedData.workerIds.length > 0) {
+      const validation = await validateWorkerAssignment(
+        validatedData.workerIds,
+        currentUser.role
+      );
+      if (!validation.valid) {
+        return NextResponse.json({ error: validation.error }, { status: 403 });
+      }
+    }
 
     // Clean empty strings to null
     const cleanData = {
@@ -192,7 +241,7 @@ export async function PATCH(request: Request) {
 
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true },
+      select: { id: true, role: true },
     });
 
     if (!currentUser) {
@@ -222,8 +271,18 @@ export async function PATCH(request: Request) {
     if (validatedData.category !== undefined) updateData.category = validatedData.category;
     if (validatedData.status !== undefined) updateData.status = validatedData.status;
 
-    // Handle workers update
+    // Handle workers update with role validation
     if (validatedData.workerIds !== undefined) {
+      // Validate worker assignments based on role hierarchy
+      if (validatedData.workerIds.length > 0) {
+        const validation = await validateWorkerAssignment(
+          validatedData.workerIds,
+          currentUser.role
+        );
+        if (!validation.valid) {
+          return NextResponse.json({ error: validation.error }, { status: 403 });
+        }
+      }
       updateData.workers = {
         set: validatedData.workerIds.map((id) => ({ id })),
       };

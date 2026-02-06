@@ -5,6 +5,45 @@ import { taskSchema, updateTaskSchema } from "@/lib/validations/task";
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { z } from "zod";
 
+// Helper function to get allowed roles for task assignment
+function getAllowedRolesForAssignment(userRole: string): string[] {
+  if (userRole === "SUPER_ADMIN") {
+    return ["USER", "ADMIN"];
+  }
+  // Both USER and ADMIN can only assign to USER
+  return ["USER"];
+}
+
+// Validate that worker IDs only include users with allowed roles
+async function validateWorkerAssignment(
+  workerIds: string[],
+  userRole: string
+): Promise<{ valid: boolean; error?: string }> {
+  if (!workerIds || workerIds.length === 0) {
+    return { valid: true };
+  }
+
+  const allowedRoles = getAllowedRolesForAssignment(userRole);
+
+  // Check if any of the workers have roles that shouldn't be assigned
+  const invalidWorkers = await prisma.user.findMany({
+    where: {
+      id: { in: workerIds },
+      role: { notIn: allowedRoles },
+    },
+    select: { id: true, role: true, name: true },
+  });
+
+  if (invalidWorkers.length > 0) {
+    return {
+      valid: false,
+      error: "No puedes asignar tareas a usuarios con roles superiores o iguales al tuyo",
+    };
+  }
+
+  return { valid: true };
+}
+
 // GET - List tasks (filtered by assignment for regular users)
 export async function GET(request: Request) {
   try {
@@ -120,7 +159,7 @@ export async function POST(request: Request) {
 
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true },
+      select: { id: true, role: true },
     });
 
     if (!currentUser) {
@@ -129,6 +168,17 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const validatedData = taskSchema.parse(body);
+
+    // Validate worker assignments based on role hierarchy
+    if (validatedData.workerIds && validatedData.workerIds.length > 0) {
+      const validation = await validateWorkerAssignment(
+        validatedData.workerIds,
+        currentUser.role
+      );
+      if (!validation.valid) {
+        return NextResponse.json({ error: validation.error }, { status: 403 });
+      }
+    }
 
     // Parse dates
     const dueDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
@@ -265,6 +315,16 @@ export async function PATCH(request: Request) {
 
     // Handle workers update (only admin or creator can change workers)
     if (validatedData.workerIds !== undefined && (isAdmin || isCreator)) {
+      // Validate worker assignments based on role hierarchy
+      if (validatedData.workerIds.length > 0) {
+        const validation = await validateWorkerAssignment(
+          validatedData.workerIds,
+          currentUser.role
+        );
+        if (!validation.valid) {
+          return NextResponse.json({ error: validation.error }, { status: 403 });
+        }
+      }
       updateData.workers = {
         set: validatedData.workerIds.map((id) => ({ id })),
       };

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// GET - List all workers (verified users)
+// GET - List workers that can be assigned by the current user
 export async function GET() {
   try {
     const session = await auth();
@@ -11,10 +11,34 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Get all verified users as potential workers
+    // Get current user's role
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    // Determine which roles the current user can assign work to:
+    // - USER can only assign to USER
+    // - ADMIN can only assign to USER
+    // - SUPER_ADMIN can assign to USER and ADMIN
+    let allowedRoles: string[] = [];
+
+    if (currentUser.role === "SUPER_ADMIN") {
+      allowedRoles = ["USER", "ADMIN"];
+    } else {
+      // Both USER and ADMIN can only assign to USER
+      allowedRoles = ["USER"];
+    }
+
+    // Get workers filtered by allowed roles
     const workers = await prisma.user.findMany({
       where: {
         emailVerified: { not: null },
+        role: { in: allowedRoles },
       },
       select: {
         id: true,
