@@ -15,7 +15,7 @@ function getAllowedRolesForAssignment(userRole: string): string[] {
 }
 
 // Validate that worker IDs only include users with allowed roles
-// SUPER_ADMIN can also assign to themselves (but not other SUPER_ADMINs)
+// ADMIN and SUPER_ADMIN can also assign to themselves (but not others with same/higher role)
 async function validateWorkerAssignment(
   workerIds: string[],
   userRole: string,
@@ -26,13 +26,14 @@ async function validateWorkerAssignment(
   }
 
   const allowedRoles = getAllowedRolesForAssignment(userRole);
+  const canAssignToSelf = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   const invalidWorkers = await prisma.user.findMany({
     where: {
       id: { in: workerIds },
       role: { notIn: allowedRoles },
-      // SUPER_ADMIN can assign to themselves
-      ...(userRole === "SUPER_ADMIN" ? { NOT: { id: currentUserId } } : {}),
+      // ADMIN and SUPER_ADMIN can assign to themselves
+      ...(canAssignToSelf ? { NOT: { id: currentUserId } } : {}),
     },
     select: { id: true, role: true, name: true },
   });
