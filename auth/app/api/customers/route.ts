@@ -15,20 +15,25 @@ function getAllowedRolesForAssignment(userRole: string): string[] {
 }
 
 // Validate that worker IDs only include users with allowed roles
+// ADMIN and SUPER_ADMIN can also assign to themselves (but not others with same/higher role)
 async function validateWorkerAssignment(
   workerIds: string[],
-  userRole: string
+  userRole: string,
+  currentUserId: string
 ): Promise<{ valid: boolean; error?: string }> {
   if (!workerIds || workerIds.length === 0) {
     return { valid: true };
   }
 
   const allowedRoles = getAllowedRolesForAssignment(userRole);
+  const canAssignToSelf = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   const invalidWorkers = await prisma.user.findMany({
     where: {
       id: { in: workerIds },
       role: { notIn: allowedRoles },
+      // ADMIN and SUPER_ADMIN can assign to themselves
+      ...(canAssignToSelf ? { NOT: { id: currentUserId } } : {}),
     },
     select: { id: true, role: true, name: true },
   });
@@ -159,7 +164,8 @@ export async function POST(request: Request) {
     if (validatedData.workerIds && validatedData.workerIds.length > 0) {
       const validation = await validateWorkerAssignment(
         validatedData.workerIds,
-        currentUser.role
+        currentUser.role,
+        currentUser.id
       );
       if (!validation.valid) {
         return NextResponse.json({ error: validation.error }, { status: 403 });
@@ -277,7 +283,8 @@ export async function PATCH(request: Request) {
       if (validatedData.workerIds.length > 0) {
         const validation = await validateWorkerAssignment(
           validatedData.workerIds,
-          currentUser.role
+          currentUser.role,
+          currentUser.id
         );
         if (!validation.valid) {
           return NextResponse.json({ error: validation.error }, { status: 403 });
