@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import TaskTable from "./task-table";
 import TaskModal from "./task-modal";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
 interface Worker {
   id: string;
@@ -44,6 +46,8 @@ export default function TasksClient() {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  const { showToast } = useToast();
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -122,25 +126,29 @@ export default function TasksClient() {
     setIsModalOpen(true);
   }
 
-  async function handleDeleteTask(taskId: string, taskTitle: string) {
-    if (!confirm(`¿Estás seguro de eliminar la tarea "${taskTitle}"?`)) {
-      return;
-    }
+  function handleDeleteTask(taskId: string, taskTitle: string) {
+    setConfirmAction({
+      title: "Eliminar tarea",
+      message: `¿Estás seguro de eliminar la tarea "${taskTitle}"?`,
+      onConfirm: async () => {
+        setConfirmAction(null);
+        try {
+          const response = await fetch(`/api/tasks?id=${taskId}`, {
+            method: "DELETE",
+          });
 
-    try {
-      const response = await fetch(`/api/tasks?id=${taskId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        setTasks(tasks.filter((t) => t.id !== taskId));
-      } else {
-        const data = await response.json();
-        alert(data.error || "Error al eliminar tarea");
-      }
-    } catch (err) {
-      alert("Error de conexión");
-    }
+          if (response.ok) {
+            setTasks(tasks.filter((t) => t.id !== taskId));
+            showToast("Tarea eliminada correctamente", "success");
+          } else {
+            const data = await response.json();
+            showToast(data.error || "Error al eliminar tarea", "error");
+          }
+        } catch (err) {
+          showToast("Error de conexion", "error");
+        }
+      },
+    });
   }
 
   async function handleStatusChange(taskId: string, status: "PENDING" | "IN_PROGRESS" | "COMPLETED") {
@@ -154,12 +162,13 @@ export default function TasksClient() {
       if (response.ok) {
         const data = await response.json();
         setTasks(tasks.map((t) => (t.id === taskId ? data.task : t)));
+        showToast("Estado actualizado", "success");
       } else {
         const data = await response.json();
-        alert(data.error || "Error al actualizar estado");
+        showToast(data.error || "Error al actualizar estado", "error");
       }
     } catch (err) {
-      alert("Error de conexión");
+      showToast("Error de conexion", "error");
     }
   }
 
@@ -171,8 +180,10 @@ export default function TasksClient() {
   function handleTaskSaved(task: Task) {
     if (editingTask) {
       setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
+      showToast("Tarea actualizada correctamente", "success");
     } else {
       setTasks([task, ...tasks]);
+      showToast("Tarea creada correctamente", "success");
     }
     handleModalClose();
   }
@@ -300,6 +311,17 @@ export default function TasksClient() {
           customers={customers}
           onClose={handleModalClose}
           onSaved={handleTaskSaved}
+        />
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmAction && (
+        <ConfirmDialog
+          title={confirmAction.title}
+          message={confirmAction.message}
+          confirmLabel="Eliminar"
+          onConfirm={confirmAction.onConfirm}
+          onCancel={() => setConfirmAction(null)}
         />
       )}
     </div>

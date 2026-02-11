@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
 interface User {
   id: string;
@@ -18,6 +20,8 @@ export default function AdminUsersTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ title: string; message: string; confirmLabel: string; variant?: "danger" | "primary"; onConfirm: () => void } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchUsers();
@@ -53,96 +57,107 @@ export default function AdminUsersTable() {
       const data = await response.json();
 
       if (response.ok) {
-        setUsers(users.map(u => 
+        setUsers(users.map(u =>
           u.id === userId ? { ...u, role: newRole } : u
         ));
+        showToast("Rol actualizado correctamente", "success");
       } else {
-        alert(data.error || "Error al actualizar rol");
+        showToast(data.error || "Error al actualizar rol", "error");
       }
     } catch (err) {
-      alert("Error de conexión");
+      showToast("Error de conexion", "error");
     } finally {
       setActionLoading(null);
     }
   }
 
-  async function handleDelete(userId: string, email: string) {
-    if (!confirm(`¿Estás seguro de eliminar a ${email}?`)) {
-      return;
-    }
-
-    setActionLoading(userId);
-    try {
-      const response = await fetch(`/api/admin/users?userId=${userId}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUsers(users.filter(u => u.id !== userId));
-      } else {
-        alert(data.error || "Error al eliminar usuario");
-      }
-    } catch (err) {
-      alert("Error de conexión");
-    } finally {
-      setActionLoading(null);
-    }
+  function handleDelete(userId: string, email: string) {
+    setConfirmAction({
+      title: "Eliminar usuario",
+      message: `¿Estás seguro de eliminar a ${email}?`,
+      confirmLabel: "Eliminar",
+      onConfirm: async () => {
+        setConfirmAction(null);
+        setActionLoading(userId);
+        try {
+          const response = await fetch(`/api/admin/users?userId=${userId}`, {
+            method: "DELETE",
+          });
+          const data = await response.json();
+          if (response.ok) {
+            setUsers(users.filter(u => u.id !== userId));
+            showToast("Usuario eliminado correctamente", "success");
+          } else {
+            showToast(data.error || "Error al eliminar usuario", "error");
+          }
+        } catch (err) {
+          showToast("Error de conexion", "error");
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   }
 
-  async function handleVerify(userId: string, email: string) {
-    if (!confirm(`¿Verificar manualmente a ${email}?`)) {
-      return;
-    }
-
-    setActionLoading(userId);
-    try {
-      const response = await fetch("/api/admin/users", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUsers(users.map(u =>
-          u.id === userId ? { ...u, emailVerified: new Date().toISOString() } : u
-        ));
-      } else {
-        alert(data.error || "Error al verificar usuario");
-      }
-    } catch (err) {
-      alert("Error de conexión");
-    } finally {
-      setActionLoading(null);
-    }
+  function handleVerify(userId: string, email: string) {
+    setConfirmAction({
+      title: "Verificar usuario",
+      message: `¿Verificar manualmente a ${email}?`,
+      confirmLabel: "Verificar",
+      variant: "primary",
+      onConfirm: async () => {
+        setConfirmAction(null);
+        setActionLoading(userId);
+        try {
+          const response = await fetch("/api/admin/users", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            setUsers(users.map(u =>
+              u.id === userId ? { ...u, emailVerified: new Date().toISOString() } : u
+            ));
+            showToast("Usuario verificado correctamente", "success");
+          } else {
+            showToast(data.error || "Error al verificar usuario", "error");
+          }
+        } catch (err) {
+          showToast("Error de conexion", "error");
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   }
 
-  async function handleReject(userId: string, email: string) {
-    if (!confirm(`¿Rechazar y eliminar a ${email}? Esta acción no se puede deshacer.`)) {
-      return;
-    }
-
-    setActionLoading(userId);
-    try {
-      const response = await fetch(`/api/admin/users?userId=${userId}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUsers(users.filter(u => u.id !== userId));
-      } else {
-        alert(data.error || "Error al rechazar usuario");
-      }
-    } catch (err) {
-      alert("Error de conexión");
-    } finally {
-      setActionLoading(null);
-    }
+  function handleReject(userId: string, email: string) {
+    setConfirmAction({
+      title: "Rechazar usuario",
+      message: `¿Rechazar y eliminar a ${email}? Esta accion no se puede deshacer.`,
+      confirmLabel: "Rechazar",
+      onConfirm: async () => {
+        setConfirmAction(null);
+        setActionLoading(userId);
+        try {
+          const response = await fetch(`/api/admin/users?userId=${userId}`, {
+            method: "DELETE",
+          });
+          const data = await response.json();
+          if (response.ok) {
+            setUsers(users.filter(u => u.id !== userId));
+            showToast("Usuario rechazado correctamente", "success");
+          } else {
+            showToast(data.error || "Error al rechazar usuario", "error");
+          }
+        } catch (err) {
+          showToast("Error de conexion", "error");
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   }
 
   // Determinar si puede editar el rol de un usuario
@@ -343,6 +358,18 @@ export default function AdminUsersTable() {
         <div className="p-6 text-center text-muted-foreground">
           No hay usuarios
         </div>
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmAction && (
+        <ConfirmDialog
+          title={confirmAction.title}
+          message={confirmAction.message}
+          confirmLabel={confirmAction.confirmLabel}
+          variant={confirmAction.variant || "danger"}
+          onConfirm={confirmAction.onConfirm}
+          onCancel={() => setConfirmAction(null)}
+        />
       )}
     </div>
   );

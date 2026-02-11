@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import CustomerTable from "./customer-table";
 import CustomerModal from "./customer-modal";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
 interface Worker {
   id: string;
@@ -38,6 +40,8 @@ export default function CustomersClient() {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  const { showToast } = useToast();
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -102,25 +106,29 @@ export default function CustomersClient() {
     setIsModalOpen(true);
   }
 
-  async function handleDeleteCustomer(customerId: string, customerName: string) {
-    if (!confirm(`¿Estás seguro de eliminar a ${customerName}?`)) {
-      return;
-    }
+  function handleDeleteCustomer(customerId: string, customerName: string) {
+    setConfirmAction({
+      title: "Eliminar cliente",
+      message: `¿Estás seguro de eliminar a ${customerName}?`,
+      onConfirm: async () => {
+        setConfirmAction(null);
+        try {
+          const response = await fetch(`/api/customers?id=${customerId}`, {
+            method: "DELETE",
+          });
 
-    try {
-      const response = await fetch(`/api/customers?id=${customerId}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        setCustomers(customers.filter((c) => c.id !== customerId));
-      } else {
-        const data = await response.json();
-        alert(data.error || "Error al eliminar cliente");
-      }
-    } catch (err) {
-      alert("Error de conexión");
-    }
+          if (response.ok) {
+            setCustomers(customers.filter((c) => c.id !== customerId));
+            showToast("Cliente eliminado correctamente", "success");
+          } else {
+            const data = await response.json();
+            showToast(data.error || "Error al eliminar cliente", "error");
+          }
+        } catch (err) {
+          showToast("Error de conexion", "error");
+        }
+      },
+    });
   }
 
   function handleModalClose() {
@@ -131,8 +139,10 @@ export default function CustomersClient() {
   function handleCustomerSaved(customer: Customer) {
     if (editingCustomer) {
       setCustomers(customers.map((c) => (c.id === customer.id ? customer : c)));
+      showToast("Cliente actualizado correctamente", "success");
     } else {
       setCustomers([customer, ...customers]);
+      showToast("Cliente creado correctamente", "success");
     }
     handleModalClose();
   }
@@ -254,6 +264,17 @@ export default function CustomersClient() {
           workers={workers}
           onClose={handleModalClose}
           onSaved={handleCustomerSaved}
+        />
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmAction && (
+        <ConfirmDialog
+          title={confirmAction.title}
+          message={confirmAction.message}
+          confirmLabel="Eliminar"
+          onConfirm={confirmAction.onConfirm}
+          onCancel={() => setConfirmAction(null)}
         />
       )}
     </div>
