@@ -176,13 +176,13 @@ export default function AdminUsersTable() {
     switch (role) {
       case "SUPER_ADMIN":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full">
+          <span className="px-2 py-1 text-xs font-medium bg-section-admin-light text-section-admin border border-section-admin-border rounded-full">
             Super Admin
           </span>
         );
       case "ADMIN":
         return (
-          <span className="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full">
+          <span className="px-2 py-1 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full">
             Admin
           </span>
         );
@@ -217,21 +217,21 @@ export default function AdminUsersTable() {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-muted/50">
+        <thead className="bg-section-admin-light">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-admin uppercase tracking-wider">
               Usuario
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-admin uppercase tracking-wider">
               Email verificado
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-admin uppercase tracking-wider">
               Rol
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-admin uppercase tracking-wider">
               Registro
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-semibold text-section-admin uppercase tracking-wider">
               Acciones
             </th>
           </tr>
@@ -248,8 +248,8 @@ export default function AdminUsersTable() {
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-border"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-border">
-                      <span className="text-sm font-medium text-primary">
+                    <div className="w-10 h-10 rounded-full bg-section-admin-light flex items-center justify-center ring-2 ring-section-admin-border">
+                      <span className="text-sm font-medium text-section-admin">
                         {user.name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -277,7 +277,7 @@ export default function AdminUsersTable() {
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value as "USER" | "ADMIN" | "SUPER_ADMIN")}
                     disabled={actionLoading === user.id}
-                    className="text-sm border border-border bg-background text-foreground rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="text-sm border border-border bg-background text-foreground rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-section-admin"
                   >
                     {currentUserRole === "SUPER_ADMIN" ? (
                       <>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { Role } from "@prisma/client";
 
 // GET - List workers that can be assigned by the current user
 export async function GET() {
@@ -25,7 +26,7 @@ export async function GET() {
     // - USER can only assign to USER
     // - ADMIN can only assign to USER and themselves (not other ADMIN)
     // - SUPER_ADMIN can assign to USER, ADMIN, and themselves (not other SUPER_ADMIN)
-    let allowedRoles: string[] = ["USER"];
+    let allowedRoles: Role[] = ["USER"];
 
     if (currentUser.role === "SUPER_ADMIN") {
       allowedRoles = ["USER", "ADMIN"];

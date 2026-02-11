@@ -3,50 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { customerSchema, updateCustomerSchema } from "@/lib/validations/customer";
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
+import { validateWorkerAssignment } from "@/lib/worker-assignment";
 import { z } from "zod";
-
-// Helper function to get allowed roles for worker assignment
-function getAllowedRolesForAssignment(userRole: string): string[] {
-  if (userRole === "SUPER_ADMIN") {
-    return ["USER", "ADMIN"];
-  }
-  // Both USER and ADMIN can only assign to USER
-  return ["USER"];
-}
-
-// Validate that worker IDs only include users with allowed roles
-// ADMIN and SUPER_ADMIN can also assign to themselves (but not others with same/higher role)
-async function validateWorkerAssignment(
-  workerIds: string[],
-  userRole: string,
-  currentUserId: string
-): Promise<{ valid: boolean; error?: string }> {
-  if (!workerIds || workerIds.length === 0) {
-    return { valid: true };
-  }
-
-  const allowedRoles = getAllowedRolesForAssignment(userRole);
-  const canAssignToSelf = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
-
-  const invalidWorkers = await prisma.user.findMany({
-    where: {
-      id: { in: workerIds },
-      role: { notIn: allowedRoles },
-      // ADMIN and SUPER_ADMIN can assign to themselves
-      ...(canAssignToSelf ? { NOT: { id: currentUserId } } : {}),
-    },
-    select: { id: true, role: true, name: true },
-  });
-
-  if (invalidWorkers.length > 0) {
-    return {
-      valid: false,
-      error: "No puedes asignar clientes a usuarios con roles superiores o iguales al tuyo",
-    };
-  }
-
-  return { valid: true };
-}
 
 // GET - List customers (filtered by assignment for regular users)
 export async function GET(request: Request) {
@@ -73,6 +31,8 @@ export async function GET(request: Request) {
     const status = searchParams.get("status");
     const category = searchParams.get("category");
     const search = searchParams.get("search");
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
 
     const where: any = {};
 
@@ -107,7 +67,14 @@ export async function GET(request: Request) {
       ];
     }
 
-    const customers = await prisma.customer.findMany({
+    // Pagination (opt-in: only when ?page= is provided)
+    const paginate = pageParam !== null;
+    const page = Math.max(1, parseInt(pageParam || "1"));
+    const limit = Math.min(Math.max(1, parseInt(limitParam || "50")), 100);
+    const skip = paginate ? (page - 1) * limit : undefined;
+    const take = paginate ? limit : undefined;
+
+    const findArgs = {
       where,
       include: {
         workers: {
@@ -126,9 +93,23 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
-    });
+      orderBy: { createdAt: "desc" as const },
+      ...(paginate ? { skip, take } : {}),
+    };
 
+    if (paginate) {
+      const [customers, total] = await Promise.all([
+        prisma.customer.findMany(findArgs),
+        prisma.customer.count({ where }),
+      ]);
+      return NextResponse.json({
+        customers,
+        isAdmin,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      }, { status: 200 });
+    }
+
+    const customers = await prisma.customer.findMany(findArgs);
     return NextResponse.json({ customers, isAdmin }, { status: 200 });
   } catch (error) {
     console.error("Error obteniendo clientes:", error);
@@ -259,10 +240,20 @@ export async function PATCH(request: Request) {
 
     const existingCustomer = await prisma.customer.findUnique({
       where: { id: validatedData.id },
+      include: { workers: { select: { id: true } } },
     });
 
     if (!existingCustomer) {
       return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
+    }
+
+    // Check permission: admin, creator, or assigned worker
+    const isAdmin = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
+    const isCreator = existingCustomer.createdById === currentUser.id;
+    const isAssigned = existingCustomer.workers.some((w) => w.id === currentUser.id);
+
+    if (!isAdmin && !isCreator && !isAssigned) {
+      return NextResponse.json({ error: "No tienes permiso para editar este cliente" }, { status: 403 });
     }
 
     // Build update data
@@ -277,8 +268,8 @@ export async function PATCH(request: Request) {
     if (validatedData.category !== undefined) updateData.category = validatedData.category;
     if (validatedData.status !== undefined) updateData.status = validatedData.status;
 
-    // Handle workers update with role validation
-    if (validatedData.workerIds !== undefined) {
+    // Handle workers update (only admin or creator can change workers)
+    if (validatedData.workerIds !== undefined && (isAdmin || isCreator)) {
       // Validate worker assignments based on role hierarchy
       if (validatedData.workerIds.length > 0) {
         const validation = await validateWorkerAssignment(
@@ -373,6 +364,12 @@ export async function DELETE(request: Request) {
 
     if (!customer) {
       return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
+    }
+
+    // Only admin or creator can delete
+    const isAdmin = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
+    if (!isAdmin && customer.createdById !== currentUser.id) {
+      return NextResponse.json({ error: "No tienes permiso para eliminar este cliente" }, { status: 403 });
     }
 
     await prisma.customer.delete({

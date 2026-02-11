@@ -24,8 +24,8 @@ export default function AuthForm({
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-md shadow-primary/20">
             <svg
               className="w-5 h-5 text-primary-foreground"
               fill="none"
@@ -40,7 +40,7 @@ export default function AuthForm({
               />
             </svg>
           </div>
-          <span className="text-xl font-bold text-foreground">SerTEC</span>
+          <span className="text-xl font-bold text-foreground tracking-tight">SerTEC</span>
         </Link>
         <ThemeToggle />
       </header>
@@ -49,13 +49,13 @@ export default function AuthForm({
       <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-foreground">{title}</h2>
+            <h2 className="text-3xl font-extrabold text-foreground tracking-tight">{title}</h2>
             {subtitle && (
-              <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+              <p className="mt-3 text-sm text-muted-foreground">{subtitle}</p>
             )}
           </div>
 
-          <div className="bg-background border border-border py-8 px-6 shadow-lg rounded-xl">
+          <div className="bg-background border border-border py-8 px-6 shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl">
             {children}
           </div>
 
@@ -63,7 +63,7 @@ export default function AuthForm({
             {footerText}{" "}
             <Link
               href={footerLinkHref}
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
+              className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
               {footerLinkText}
             </Link>

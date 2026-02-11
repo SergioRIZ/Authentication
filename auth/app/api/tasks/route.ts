@@ -3,51 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { taskSchema, updateTaskSchema } from "@/lib/validations/task";
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
+import { validateWorkerAssignment } from "@/lib/worker-assignment";
 import { z } from "zod";
-
-// Helper function to get allowed roles for task assignment
-function getAllowedRolesForAssignment(userRole: string): string[] {
-  if (userRole === "SUPER_ADMIN") {
-    return ["USER", "ADMIN"];
-  }
-  // Both USER and ADMIN can only assign to USER
-  return ["USER"];
-}
-
-// Validate that worker IDs only include users with allowed roles
-// ADMIN and SUPER_ADMIN can also assign to themselves (but not others with same/higher role)
-async function validateWorkerAssignment(
-  workerIds: string[],
-  userRole: string,
-  currentUserId: string
-): Promise<{ valid: boolean; error?: string }> {
-  if (!workerIds || workerIds.length === 0) {
-    return { valid: true };
-  }
-
-  const allowedRoles = getAllowedRolesForAssignment(userRole);
-  const canAssignToSelf = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
-
-  // Check if any of the workers have roles that shouldn't be assigned
-  const invalidWorkers = await prisma.user.findMany({
-    where: {
-      id: { in: workerIds },
-      role: { notIn: allowedRoles },
-      // ADMIN and SUPER_ADMIN can assign to themselves
-      ...(canAssignToSelf ? { NOT: { id: currentUserId } } : {}),
-    },
-    select: { id: true, role: true, name: true },
-  });
-
-  if (invalidWorkers.length > 0) {
-    return {
-      valid: false,
-      error: "No puedes asignar tareas a usuarios con roles superiores o iguales al tuyo",
-    };
-  }
-
-  return { valid: true };
-}
 
 // GET - List tasks (filtered by assignment for regular users)
 export async function GET(request: Request) {
@@ -75,6 +32,8 @@ export async function GET(request: Request) {
     const priority = searchParams.get("priority");
     const search = searchParams.get("search");
     const customerId = searchParams.get("customerId");
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
 
     const where: any = {};
 
@@ -110,7 +69,14 @@ export async function GET(request: Request) {
       ];
     }
 
-    const tasks = await prisma.task.findMany({
+    // Pagination (opt-in: only when ?page= is provided)
+    const paginate = pageParam !== null;
+    const page = Math.max(1, parseInt(pageParam || "1"));
+    const limit = Math.min(Math.max(1, parseInt(limitParam || "50")), 100);
+    const skip = paginate ? (page - 1) * limit : undefined;
+    const take = paginate ? limit : undefined;
+
+    const findArgs = {
       where,
       include: {
         workers: {
@@ -136,13 +102,27 @@ export async function GET(request: Request) {
         },
       },
       orderBy: [
-        { status: "asc" },
-        { priority: "desc" },
-        { dueDate: "asc" },
-        { createdAt: "desc" },
+        { status: "asc" as const },
+        { priority: "desc" as const },
+        { dueDate: "asc" as const },
+        { createdAt: "desc" as const },
       ],
-    });
+      ...(paginate ? { skip, take } : {}),
+    };
 
+    if (paginate) {
+      const [tasks, total] = await Promise.all([
+        prisma.task.findMany(findArgs),
+        prisma.task.count({ where }),
+      ]);
+      return NextResponse.json({
+        tasks,
+        isAdmin,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      }, { status: 200 });
+    }
+
+    const tasks = await prisma.task.findMany(findArgs);
     return NextResponse.json({ tasks, isAdmin }, { status: 200 });
   } catch (error) {
     console.error("Error obteniendo tareas:", error);

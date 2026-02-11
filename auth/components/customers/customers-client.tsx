@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Button from "@/components/ui/buttons";
 import CustomerTable from "./customer-table";
 import CustomerModal from "./customer-modal";
 
@@ -143,30 +142,40 @@ export default function CustomersClient() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Clientes</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span className="w-9 h-9 bg-section-clients-light border border-section-clients-border rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-section-clients" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </span>
+            Clientes
+          </h1>
           <p className="text-muted-foreground mt-1">
             Gestiona los clientes de SerTEC
           </p>
         </div>
-        <Button onClick={handleAddCustomer}>
+        <button
+          onClick={handleAddCustomer}
+          className="inline-flex items-center justify-center font-semibold rounded-xl px-4 py-2.5 text-sm text-white bg-section-clients hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-section-clients shadow-md transition-all"
+        >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Nuevo Cliente
-        </Button>
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-background border border-border rounded-xl p-4">
+      <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Search */}
           <div className="sm:col-span-2">
             <input
               type="text"
-              placeholder="Buscar por nombre, email, teléfono o DNI..."
+              placeholder="Buscar por nombre, email, telefono o DNI..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients focus:border-section-clients transition-all"
             />
           </div>
 
@@ -174,7 +183,7 @@ export default function CustomersClient() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients"
           >
             <option value="">Todos los estados</option>
             <option value="ACTIVE">Activo</option>
@@ -185,9 +194,9 @@ export default function CustomersClient() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients"
           >
-            <option value="">Todas las categorías</option>
+            <option value="">Todas las categorias</option>
             <option value="PREMIUM">Premium</option>
             <option value="REGULAR">Regular</option>
             <option value="OCCASIONAL">Ocasional</option>
@@ -197,23 +206,23 @@ export default function CustomersClient() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Total Clientes</p>
-          <p className="text-2xl font-bold text-foreground">{customers.length}</p>
+          <p className="text-2xl font-bold text-section-clients">{customers.length}</p>
         </div>
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Activos</p>
           <p className="text-2xl font-bold text-green-600 dark:text-green-400">
             {customers.filter((c) => c.status === "ACTIVE").length}
           </p>
         </div>
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Premium</p>
           <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {customers.filter((c) => c.category === "PREMIUM").length}
           </p>
         </div>
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Inactivos</p>
           <p className="text-2xl font-bold text-muted-foreground">
             {customers.filter((c) => c.status === "INACTIVE").length}
@@ -229,7 +238,7 @@ export default function CustomersClient() {
       )}
 
       {/* Table */}
-      <div className="bg-background border border-border rounded-xl overflow-hidden">
+      <div className="bg-background border border-section-clients-border rounded-2xl overflow-hidden">
         <CustomerTable
           customers={customers}
           isLoading={isLoading}

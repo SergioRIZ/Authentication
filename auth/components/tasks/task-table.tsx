@@ -17,6 +17,7 @@ interface Task {
   startDate: string | null;
   completedAt: string | null;
   createdAt: string;
+  customerId: string | null;
   workers: Worker[];
   createdBy: {
     id: string;
@@ -157,27 +158,27 @@ export default function TaskTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-muted/50">
+        <thead className="bg-section-tasks-light">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-tasks uppercase tracking-wider">
               Tarea
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-tasks uppercase tracking-wider">
               Estado
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-tasks uppercase tracking-wider">
               Prioridad
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Fecha Límite
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-tasks uppercase tracking-wider">
+              Fecha Limite
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-tasks uppercase tracking-wider">
               Asignados
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-tasks uppercase tracking-wider">
               Cliente
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-semibold text-section-tasks uppercase tracking-wider">
               Acciones
             </th>
           </tr>
@@ -206,7 +207,7 @@ export default function TaskTable({
                 <select
                   value={task.status}
                   onChange={(e) => onStatusChange(task.id, e.target.value as any)}
-                  className="text-xs bg-transparent border-0 p-0 focus:ring-0 cursor-pointer"
+                  className="text-xs font-medium bg-muted/50 border border-border text-foreground rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-section-tasks cursor-pointer"
                 >
                   <option value="PENDING">Pendiente</option>
                   <option value="IN_PROGRESS">En Progreso</option>
@@ -274,7 +275,7 @@ export default function TaskTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(task)}
-                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                    className="text-sm text-section-tasks hover:opacity-80 font-medium transition-colors"
                   >
                     Editar
                   </button>

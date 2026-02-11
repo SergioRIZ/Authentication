@@ -29,19 +29,19 @@ export async function POST() {
     }
 
     // Generate secret and URI
-    const { secret, uri } = generateTwoFactorSecret(user.email);
+    const { encryptedSecret, plainSecret, uri } = generateTwoFactorSecret(user.email);
 
-    // Store secret temporarily (not enabled yet until user verifies)
+    // Store encrypted secret (not enabled yet until user verifies)
     await prisma.user.update({
       where: { id: user.id },
-      data: { twoFactorSecret: secret } as any,
+      data: { twoFactorSecret: encryptedSecret } as any,
     });
 
     // Generate QR code as data URL
     const qrCodeDataUrl = await QRCode.toDataURL(uri);
 
     return NextResponse.json({
-      secret,
+      secret: plainSecret,
       qrCode: qrCodeDataUrl,
     });
   } catch (error) {

@@ -131,27 +131,27 @@ export default function CustomerTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-muted/50">
+        <thead className="bg-section-clients-light">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-clients uppercase tracking-wider">
               Cliente
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-clients uppercase tracking-wider">
               Contacto
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-clients uppercase tracking-wider">
               DNI/NIF
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Categoría
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-clients uppercase tracking-wider">
+              Categoria
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-clients uppercase tracking-wider">
               Estado
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-section-clients uppercase tracking-wider">
               Trabajadores
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-semibold text-section-clients uppercase tracking-wider">
               Acciones
             </th>
           </tr>
@@ -237,7 +237,7 @@ export default function CustomerTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(customer)}
-                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                    className="text-sm text-section-clients hover:opacity-80 font-medium transition-colors"
                   >
                     Editar
                   </button>

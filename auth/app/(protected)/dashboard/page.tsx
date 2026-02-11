@@ -84,7 +84,7 @@ export default async function DashboardPage() {
 
       <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         {/* Welcome card */}
-        <div className="bg-background border border-border rounded-xl shadow-sm p-6 mb-8">
+        <div className="bg-background border border-border rounded-2xl shadow-sm p-6 mb-8">
           <div className="flex items-center gap-4 mb-6">
             {user.image ? (
               <img
@@ -93,7 +93,7 @@ export default async function DashboardPage() {
                 className="w-16 h-16 rounded-full object-cover ring-4 ring-border"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-border">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary/20 to-accent/20 flex items-center justify-center ring-4 ring-border">
                 <span className="text-2xl font-medium text-primary">
                   {user.name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                 </span>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
               {/* Edit profile */}
               <Link
                 href="/profile"
-                className="flex items-center gap-3 p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 p-4 border border-border rounded-2xl hover:bg-muted/50 transition-all hover:shadow-sm"
               >
                 <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                   <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
               {/* Settings */}
               <Link
                 href="/settings"
-                className="flex items-center gap-3 p-4 border border-border rounded-xl hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 p-4 border border-border rounded-2xl hover:bg-muted/50 transition-all hover:shadow-sm"
               >
                 <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                   <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,51 +147,16 @@ export default async function DashboardPage() {
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className={`flex items-center gap-3 p-4 border rounded-xl hover:bg-opacity-50 transition-colors ${
-                    isSuperAdmin
-                      ? "border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                      : "border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  }`}
+                  className="flex items-center gap-3 p-4 border border-section-admin-border rounded-2xl hover:bg-section-admin-light transition-all hover:shadow-sm"
                 >
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isSuperAdmin
-                        ? "bg-purple-100 dark:bg-purple-900/30"
-                        : "bg-red-100 dark:bg-red-900/30"
-                    }`}
-                  >
-                    <svg
-                      className={`w-5 h-5 ${
-                        isSuperAdmin
-                          ? "text-purple-600 dark:text-purple-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                  <div className="w-10 h-10 rounded-full bg-section-admin-light flex items-center justify-center">
+                    <svg className="w-5 h-5 text-section-admin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                   </div>
                   <div>
-                    <p
-                      className={`font-medium ${
-                        isSuperAdmin
-                          ? "text-purple-700 dark:text-purple-300"
-                          : "text-red-700 dark:text-red-300"
-                      }`}
-                    >
-                      Panel Admin
-                    </p>
-                    <p
-                      className={`text-sm ${
-                        isSuperAdmin
-                          ? "text-purple-600 dark:text-purple-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      Gestionar usuarios
-                    </p>
+                    <p className="font-medium text-section-admin">Panel Admin</p>
+                    <p className="text-sm text-muted-foreground">Gestionar usuarios</p>
                   </div>
                 </Link>
               )}
@@ -201,10 +166,10 @@ export default async function DashboardPage() {
 
         {/* Customer Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-section-clients-border">
+                <svg className="w-5 h-5 text-section-clients" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
@@ -215,9 +180,9 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-green-200 dark:border-green-800">
                 <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -229,9 +194,9 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-purple-200 dark:border-purple-800">
                 <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
@@ -243,9 +208,9 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-amber-200 dark:border-amber-800">
                 <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -259,15 +224,15 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Customers */}
-        <div className="bg-background border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-border flex items-center justify-between">
+        <div className="bg-background border border-section-clients-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-section-clients-border bg-section-clients-light flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-foreground">Clientes Recientes</h3>
-              <p className="text-sm text-muted-foreground">Últimos clientes añadidos</p>
+              <p className="text-sm text-muted-foreground">Ultimos clientes añadidos</p>
             </div>
             <Link
               href="/customers"
-              className="px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-section-clients hover:opacity-80 transition-colors"
             >
               Ver todos →
             </Link>
@@ -343,9 +308,9 @@ export default async function DashboardPage() {
 
         {/* Task Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 mt-8">
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-amber-200 dark:border-amber-800">
                 <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -357,23 +322,23 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-section-tasks-border">
+                <svg className="w-5 h-5 text-section-tasks" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">En Progreso</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{inProgressTasks}</p>
+                <p className="text-2xl font-bold text-section-tasks">{inProgressTasks}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-green-200 dark:border-green-800">
                 <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -385,10 +350,10 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-background border border-border rounded-xl p-6">
+          <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-background flex items-center justify-center border border-section-tasks-border">
+                <svg className="w-5 h-5 text-section-tasks" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
@@ -401,15 +366,15 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Tasks */}
-        <div className="bg-background border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-border flex items-center justify-between">
+        <div className="bg-background border border-section-tasks-border rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-section-tasks-border bg-section-tasks-light flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-foreground">Tareas Recientes</h3>
               <p className="text-sm text-muted-foreground">Control de equipos y progreso</p>
             </div>
             <Link
               href="/tasks"
-              className="px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-section-tasks hover:opacity-80 transition-colors"
             >
               Ver todas →
             </Link>

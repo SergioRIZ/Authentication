@@ -28,6 +28,28 @@ class AccountLockedError extends CredentialsSignin {
   code = "ACCOUNT_LOCKED"
 }
 
+// In-memory cache for user roles to avoid DB query on every JWT callback
+const roleCache = new Map<string, { role: string; expiresAt: number }>()
+const ROLE_CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+function getCachedRole(email: string): string | null {
+  const entry = roleCache.get(email)
+  if (!entry || Date.now() > entry.expiresAt) {
+    roleCache.delete(email)
+    return null
+  }
+  return entry.role
+}
+
+function setCachedRole(email: string, role: string): void {
+  roleCache.set(email, { role, expiresAt: Date.now() + ROLE_CACHE_TTL_MS })
+}
+
+/** Invalidate the cached role for a user (call after role changes). */
+export function invalidateRoleCache(email: string): void {
+  roleCache.delete(email)
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
@@ -178,6 +200,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const googleProfile = profile as GoogleProfile
         const normalizedEmail = profile.email.toLowerCase().trim()
 
+        let userId: string | undefined
+
         const user = await prisma.user.findUnique({
           where: { email: normalizedEmail }
         })
@@ -192,20 +216,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               role: "USER",
             }
           })
+          userId = newUser.id
           await logAuditEvent({
             userId: newUser.id,
             action: "REGISTER",
             details: "Registro mediante Google OAuth",
           })
-        } else if (!user.emailVerified) {
-          await prisma.user.update({
-            where: { email: normalizedEmail },
-            data: { emailVerified: new Date() }
-          })
+        } else {
+          userId = user.id
+          if (!user.emailVerified) {
+            await prisma.user.update({
+              where: { email: normalizedEmail },
+              data: { emailVerified: new Date() }
+            })
+          }
         }
 
         await logAuditEvent({
-          userId: user?.id,
+          userId,
           action: "LOGIN_SUCCESS",
           details: "Inicio de sesión con Google",
         })
@@ -218,14 +246,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id
       }
 
-      // Always refresh role from DB
+      // Refresh role from DB (cached with short TTL)
       if (token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email as string },
-          select: { role: true }
-        })
-        if (dbUser) {
-          token.role = dbUser.role
+        const email = token.email as string
+        const cached = getCachedRole(email)
+        if (cached) {
+          token.role = cached
+        } else {
+          const dbUser = await prisma.user.findUnique({
+            where: { email },
+            select: { role: true }
+          })
+          if (dbUser) {
+            token.role = dbUser.role
+            setCachedRole(email, dbUser.role)
+          }
         }
       }
 

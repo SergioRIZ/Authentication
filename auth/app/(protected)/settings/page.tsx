@@ -46,7 +46,7 @@ export default async function SettingsPage() {
         <h1 className="text-2xl font-bold text-foreground mb-8">Configuración</h1>
 
         {/* Two-Factor Authentication */}
-        <div className="bg-background border border-border rounded-xl shadow-sm p-6 mb-6">
+        <div className="bg-background border border-border rounded-2xl shadow-sm p-6 mb-6">
           <h2 className="text-xl font-bold text-foreground mb-2">
             Autenticación de dos factores (2FA)
           </h2>
@@ -66,7 +66,7 @@ export default async function SettingsPage() {
         </div>
 
         {/* Change password */}
-        <div className="bg-background border border-border rounded-xl shadow-sm p-6 mb-6">
+        <div className="bg-background border border-border rounded-2xl shadow-sm p-6 mb-6">
           <h2 className="text-xl font-bold text-foreground mb-2">
             Cambiar contraseña
           </h2>
@@ -86,7 +86,7 @@ export default async function SettingsPage() {
         </div>
 
         {/* Danger zone */}
-        <div className="bg-background border border-red-200 dark:border-red-800 rounded-xl shadow-sm p-6">
+        <div className="bg-background border border-red-200 dark:border-red-800 rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">
             Zona de peligro
           </h2>

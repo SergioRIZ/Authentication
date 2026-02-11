@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Button from "@/components/ui/buttons";
 import TaskTable from "./task-table";
 import TaskModal from "./task-modal";
 
@@ -192,30 +191,40 @@ export default function TasksClient() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Control de Equipos</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span className="w-9 h-9 bg-section-tasks-light border border-section-tasks-border rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-section-tasks" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </span>
+            Control de Equipos
+          </h1>
           <p className="text-muted-foreground mt-1">
             Gestiona tareas, monitorea el progreso y organiza tu equipo
           </p>
         </div>
-        <Button onClick={handleAddTask}>
+        <button
+          onClick={handleAddTask}
+          className="inline-flex items-center justify-center font-semibold rounded-xl px-4 py-2.5 text-sm text-white bg-section-tasks hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-section-tasks shadow-md transition-all"
+        >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Nueva Tarea
-        </Button>
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-background border border-border rounded-xl p-4">
+      <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Search */}
           <div className="sm:col-span-2">
             <input
               type="text"
-              placeholder="Buscar por título o descripción..."
+              placeholder="Buscar por titulo o descripcion..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks focus:border-section-tasks transition-all"
             />
           </div>
 
@@ -223,7 +232,7 @@ export default function TasksClient() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
           >
             <option value="">Todos los estados</option>
             <option value="PENDING">Pendiente</option>
@@ -235,7 +244,7 @@ export default function TasksClient() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-4 py-2 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            className="px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
           >
             <option value="">Todas las prioridades</option>
             <option value="HIGH">Alta</option>
@@ -247,19 +256,19 @@ export default function TasksClient() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Pendientes</p>
           <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingTasks}</p>
         </div>
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">En Progreso</p>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{inProgressTasks}</p>
+          <p className="text-2xl font-bold text-section-tasks">{inProgressTasks}</p>
         </div>
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Completadas</p>
           <p className="text-2xl font-bold text-green-600 dark:text-green-400">{completedTasks}</p>
         </div>
-        <div className="bg-background border border-border rounded-xl p-4">
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
           <p className="text-sm text-muted-foreground">Vencidas</p>
           <p className="text-2xl font-bold text-red-600 dark:text-red-400">{overdueTasks}</p>
         </div>
@@ -273,7 +282,7 @@ export default function TasksClient() {
       )}
 
       {/* Table */}
-      <div className="bg-background border border-border rounded-xl overflow-hidden">
+      <div className="bg-background border border-section-tasks-border rounded-2xl overflow-hidden">
         <TaskTable
           tasks={tasks}
           isLoading={isLoading}

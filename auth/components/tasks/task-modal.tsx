@@ -108,12 +108,12 @@ export default function TaskModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-background border border-border rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+      <div className="relative bg-background border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
         {/* Header */}
         <div className="sticky top-0 bg-background border-b border-border px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">
@@ -160,7 +160,7 @@ export default function TaskModal({
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Describe los detalles de la tarea..."
                 rows={3}
-                className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks resize-none"
               />
             </div>
           </div>
@@ -179,7 +179,7 @@ export default function TaskModal({
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
                 >
                   <option value="PENDING">Pendiente</option>
                   <option value="IN_PROGRESS">En Progreso</option>
@@ -194,7 +194,7 @@ export default function TaskModal({
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
                 >
                   <option value="LOW">Baja</option>
                   <option value="MEDIUM">Media</option>
@@ -236,7 +236,7 @@ export default function TaskModal({
             <select
               value={formData.customerId}
               onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-              className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
             >
               <option value="">Sin cliente asociado</option>
               {customers.map((customer) => (

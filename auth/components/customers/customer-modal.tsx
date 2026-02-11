@@ -98,12 +98,12 @@ export default function CustomerModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-background border border-border rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+      <div className="relative bg-background border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
         {/* Header */}
         <div className="sticky top-0 bg-background border-b border-border px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">
@@ -187,7 +187,7 @@ export default function CustomerModal({
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients"
                 >
                   <option value="PREMIUM">Premium</option>
                   <option value="REGULAR">Regular</option>
@@ -202,7 +202,7 @@ export default function CustomerModal({
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients"
                 >
                   <option value="ACTIVE">Activo</option>
                   <option value="INACTIVE">Inactivo</option>
@@ -279,7 +279,7 @@ export default function CustomerModal({
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Añade notas u observaciones sobre el cliente..."
               rows={3}
-              className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients resize-none"
             />
           </div>
 

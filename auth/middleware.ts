@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 // Rutas que requieren autenticación
-const protectedRoutes = ["/dashboard", "/profile", "/settings"];
+const protectedRoutes = ["/dashboard", "/profile", "/settings", "/tasks", "/customers", "/admin"];
 
 // Rutas solo para usuarios NO autenticados
 const authRoutes = ["/login", "/register"];
@@ -52,5 +52,5 @@ export async function middleware(request: NextRequest) {
 }
  
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/tasks/:path*", "/customers/:path*", "/admin/:path*", "/login", "/register"],
 };

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth, invalidateRoleCache } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { z } from "zod";
@@ -112,6 +112,9 @@ export async function PATCH(request: Request) {
       data: { role },
       select: { id: true, email: true, name: true, role: true },
     });
+
+    // Invalidate cached role so the JWT callback picks up the change immediately
+    invalidateRoleCache(targetUser.email);
 
     await logAuditEvent({
       userId: currentUser.id,

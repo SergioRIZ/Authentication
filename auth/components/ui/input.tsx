@@ -26,13 +26,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             type={inputType}
             className={`
               w-full px-4 py-2.5
-              bg-background
-              border rounded-lg
+              bg-muted/50
+              border rounded-xl
               text-foreground
               placeholder:text-muted-foreground
-              focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
+              focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary focus:bg-background
               disabled:bg-muted disabled:cursor-not-allowed disabled:opacity-50
-              transition-colors
+              transition-all
               ${isPassword ? "pr-10" : ""}
               ${error ? "border-red-500 dark:border-red-400" : "border-border"}
               ${className}
@@ -59,7 +59,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1 text-sm text-red-500 dark:text-red-400">{error}</p>
+          <p className="mt-1.5 text-sm text-red-500 dark:text-red-400">{error}</p>
         )}
       </div>
     );

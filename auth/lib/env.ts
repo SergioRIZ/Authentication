@@ -31,7 +31,13 @@ export const env = {
   FROM_EMAIL: optionalEnv("FROM_EMAIL", "onboarding@resend.dev"),
   APP_NAME: optionalEnv("APP_NAME", "Auth App"),
 
+  // Encryption key for 2FA secrets (64 hex chars = 32 bytes for AES-256)
+  ENCRYPTION_KEY: requireEnv("ENCRYPTION_KEY"),
+
   // Optional: Redis for rate limiting (Upstash)
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || "",
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || "",
+
+  // Optional: Secret for cron job endpoints (token cleanup, etc.)
+  CRON_SECRET: process.env.CRON_SECRET || "",
 } as const;
