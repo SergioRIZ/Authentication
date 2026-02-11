@@ -21,17 +21,17 @@ export default function Home() {
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               <ThemeToggle />
               <Link
                 href="/login"
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
               >
                 Iniciar Sesion
               </Link>
               <Link
                 href="/register"
-                className="px-4 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
+                className="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20 whitespace-nowrap"
               >
                 Registrarse
               </Link>
