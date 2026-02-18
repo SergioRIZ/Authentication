@@ -57,6 +57,16 @@ export async function GET(request: Request) {
       where.customerId = customerId;
     }
 
+    // Date range filter (for calendar view)
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+    if (from || to) {
+      const dueDateFilter: any = {};
+      if (from) dueDateFilter.gte = new Date(from);
+      if (to) dueDateFilter.lte = new Date(to);
+      where.dueDate = dueDateFilter;
+    }
+
     if (search) {
       where.AND = [
         ...(where.AND || []),

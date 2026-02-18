@@ -13,6 +13,7 @@ import {
   BarChartIcon,
   UsersIcon,
   ClipboardIcon,
+  CalendarIcon,
   AdminUsersIcon,
   SettingsIcon,
   LogOutIcon,
@@ -78,6 +79,7 @@ export function ProtectedSidebar({ user, signOutAction }: ProtectedSidebarProps)
     { href: "/dashboard", label: "Dashboard", icon: BarChartIcon },
     { href: "/customers", label: "Clientes", icon: UsersIcon },
     { href: "/tasks", label: "Tareas", icon: ClipboardIcon },
+    { href: "/calendar", label: "Calendario", icon: CalendarIcon },
     ...(isAdmin
       ? [{ href: "/admin", label: "Admin", icon: AdminUsersIcon }]
       : []),
