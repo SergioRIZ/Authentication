@@ -54,17 +54,17 @@ export default function ForgotPasswordForm() {
   if (success) {
     return (
       <div className="space-y-4 text-center">
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800">
+        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <p className="text-green-800 dark:text-green-300">
             Si el email existe en nuestra base de datos, recibirás un enlace para restablecer tu contraseña.
           </p>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Revisa tu bandeja de entrada y spam.
         </p>
         <Link
           href="/login"
-          className="inline-block text-blue-600 hover:text-blue-500 font-medium"
+          className="inline-block text-primary hover:text-primary/80 font-medium"
         >
           Volver al login
         </Link>
@@ -75,12 +75,12 @@ export default function ForgotPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           {error}
         </div>
       )}
 
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-muted-foreground">
         Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.
       </p>
 
@@ -100,7 +100,7 @@ export default function ForgotPasswordForm() {
       <div className="text-center">
         <Link
           href="/login"
-          className="text-sm text-blue-600 hover:text-blue-500"
+          className="text-sm text-primary hover:text-primary/80"
         >
           Volver al login
         </Link>

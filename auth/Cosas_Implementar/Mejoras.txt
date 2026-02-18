@@ -1,0 +1,13 @@
+Cuando haga clic en el cliente quiero que me lleve a otra página donde salga una descripción del mismo y el trabajo que hay que hacerle.
+
+Cuando haga clic en el proyecto quiero que me lleve a otra página donde salga una descripción del mismo y el cliente que tenga asignado.
+
+Meter el logo y banner de la empresa que están en ui/icons
+
+Crear calendario con fechas de vencida para proyectos y hacer también que se puedan programar reuniones conectados con TEAMS.
+
+Quiero que se cree también un popup de cuando falte 1 semana para alcanzar la fecha limite de vencida de proyectos.
+
+Quiero que cuando se inicie sesión cada usuario le salte también un popup el mismo día que tenga una reunión.
+
+Quiero también que todo sea linkeable por así decirlo, que si le clico en un cliente en el apartado que sea, me lleve al cliente, lo mismo con los proyectos o trabajadores.

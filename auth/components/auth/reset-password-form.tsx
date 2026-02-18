@@ -22,14 +22,14 @@ export default function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="space-y-4 text-center">
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-800 dark:text-red-300">
             Enlace inválido. Solicita un nuevo enlace de recuperación.
           </p>
         </div>
         <Link
           href="/forgot-password"
-          className="inline-block text-blue-600 hover:text-blue-500 font-medium"
+          className="inline-block text-primary hover:text-primary/80 font-medium"
         >
           Solicitar nuevo enlace
         </Link>
@@ -94,12 +94,12 @@ export default function ResetPasswordForm() {
   if (success) {
     return (
       <div className="space-y-4 text-center">
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800">
+        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <p className="text-green-800 dark:text-green-300">
             ¡Contraseña actualizada correctamente!
           </p>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Redirigiendo al login...
         </p>
       </div>
@@ -109,7 +109,7 @@ export default function ResetPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {errors.root && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           {errors.root}
         </div>
       )}

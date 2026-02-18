@@ -177,7 +177,7 @@ export default function TwoFactorSetup() {
             <p className="text-sm text-muted-foreground mb-4">
               Usa una app de autenticación como Google Authenticator, Authy o 1Password para escanear este código.
             </p>
-            <div className="flex justify-center bg-white p-4 rounded-lg border border-border">
+            <div className="flex justify-center bg-card p-4 rounded-lg border border-border">
               {qrCode && (
                 <img src={qrCode} alt="Código QR para 2FA" className="w-48 h-48" />
               )}

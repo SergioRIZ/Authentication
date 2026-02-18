@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { SpinnerIcon, ClipboardIcon } from "@/components/ui/icons";
+import { TaskStatusBadge, PriorityBadge } from "@/components/ui/badges";
+
 interface Worker {
   id: string;
   name: string | null;
@@ -45,52 +49,6 @@ export default function TaskTable({
   onDelete,
   onStatusChange,
 }: TaskTableProps) {
-  function getStatusBadge(status: string) {
-    switch (status) {
-      case "COMPLETED":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
-            Completada
-          </span>
-        );
-      case "IN_PROGRESS":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
-            En Progreso
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full">
-            Pendiente
-          </span>
-        );
-    }
-  }
-
-  function getPriorityBadge(priority: string) {
-    switch (priority) {
-      case "HIGH":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full">
-            Alta
-          </span>
-        );
-      case "MEDIUM":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full">
-            Media
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">
-            Baja
-          </span>
-        );
-    }
-  }
-
   function formatDate(dateStr: string | null) {
     if (!dateStr) return "-";
     const date = new Date(dateStr);
@@ -108,25 +66,7 @@ export default function TaskTable({
   if (isLoading) {
     return (
       <div className="p-12 text-center">
-        <svg
-          className="animate-spin h-8 w-8 text-primary mx-auto"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
-        </svg>
+        <SpinnerIcon className="animate-spin h-8 w-8 text-primary mx-auto" />
       </div>
     );
   }
@@ -134,19 +74,7 @@ export default function TaskTable({
   if (tasks.length === 0) {
     return (
       <div className="p-12 text-center">
-        <svg
-          className="w-12 h-12 text-muted-foreground mx-auto mb-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-          />
-        </svg>
+        <ClipboardIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground">No hay tareas</p>
         <p className="text-sm text-muted-foreground mt-1">
           Crea tu primera tarea haciendo clic en "Nueva Tarea"
@@ -193,9 +121,12 @@ export default function TaskTable({
             >
               <td className="px-6 py-4">
                 <div>
-                  <p className={`font-medium ${task.status === "COMPLETED" ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  <Link
+                    href={`/tasks/${task.id}`}
+                    className={`font-medium hover:text-section-tasks transition-colors ${task.status === "COMPLETED" ? "text-muted-foreground line-through" : "text-foreground"}`}
+                  >
                     {task.title}
-                  </p>
+                  </Link>
                   {task.description && (
                     <p className="text-sm text-muted-foreground truncate max-w-xs">
                       {task.description}
@@ -206,7 +137,7 @@ export default function TaskTable({
               <td className="px-6 py-4 whitespace-nowrap">
                 <select
                   value={task.status}
-                  onChange={(e) => onStatusChange(task.id, e.target.value as any)}
+                  onChange={(e) => onStatusChange(task.id, e.target.value as Task["status"])}
                   className="text-xs font-medium bg-muted/50 border border-border text-foreground rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-section-tasks cursor-pointer"
                 >
                   <option value="PENDING">Pendiente</option>
@@ -214,11 +145,11 @@ export default function TaskTable({
                   <option value="COMPLETED">Completada</option>
                 </select>
                 <div className="mt-1">
-                  {getStatusBadge(task.status)}
+                  {<TaskStatusBadge status={task.status} />}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {getPriorityBadge(task.priority)}
+                <PriorityBadge priority={task.priority} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`text-sm ${isOverdue(task) ? "text-red-600 dark:text-red-400 font-medium" : "text-foreground"}`}>
@@ -266,7 +197,12 @@ export default function TaskTable({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 {task.customer ? (
-                  <span className="text-foreground">{task.customer.name}</span>
+                  <Link
+                    href={`/customers/${task.customer.id}`}
+                    className="text-foreground hover:text-section-clients transition-colors font-medium"
+                  >
+                    {task.customer.name}
+                  </Link>
                 ) : (
                   <span className="text-muted-foreground">-</span>
                 )}

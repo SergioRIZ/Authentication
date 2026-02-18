@@ -5,6 +5,7 @@ import TaskTable from "./task-table";
 import TaskModal from "./task-modal";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { ClipboardIcon, PlusIcon } from "@/components/ui/icons";
 
 interface Worker {
   id: string;
@@ -101,7 +102,7 @@ export default function TasksClient() {
       const data = await response.json();
 
       if (response.ok) {
-        setCustomers(data.customers.map((c: any) => ({ id: c.id, name: c.name })));
+        setCustomers(data.customers.map((c: Customer) => ({ id: c.id, name: c.name })));
       }
     } catch (err) {
       console.error("Error fetching customers:", err);
@@ -204,9 +205,7 @@ export default function TasksClient() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <span className="w-9 h-9 bg-section-tasks-light border border-section-tasks-border rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-section-tasks" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg>
+              <ClipboardIcon className="w-5 h-5 text-section-tasks" />
             </span>
             Control de Equipos
           </h1>
@@ -218,9 +217,7 @@ export default function TasksClient() {
           onClick={handleAddTask}
           className="inline-flex items-center justify-center font-semibold rounded-xl px-4 py-2.5 text-sm text-white bg-section-tasks hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-section-tasks shadow-md transition-all"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <PlusIcon className="w-5 h-5 mr-2" />
           Nueva Tarea
         </button>
       </div>

@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { SpinnerIcon, UsersGroupIcon } from "@/components/ui/icons";
+import { CategoryBadge, CustomerStatusBadge } from "@/components/ui/badges";
+
 interface Worker {
   id: string;
   name: string | null;
@@ -40,66 +44,10 @@ export default function CustomerTable({
   onEdit,
   onDelete,
 }: CustomerTableProps) {
-  function getCategoryBadge(category: string) {
-    switch (category) {
-      case "PREMIUM":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-full">
-            Premium
-          </span>
-        );
-      case "OCCASIONAL":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded-full">
-            Ocasional
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full">
-            Regular
-          </span>
-        );
-    }
-  }
-
-  function getStatusBadge(status: string) {
-    if (status === "ACTIVE") {
-      return (
-        <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
-          Activo
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">
-        Inactivo
-      </span>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="p-12 text-center">
-        <svg
-          className="animate-spin h-8 w-8 text-primary mx-auto"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
-        </svg>
+        <SpinnerIcon className="animate-spin h-8 w-8 text-primary mx-auto" />
       </div>
     );
   }
@@ -107,19 +55,7 @@ export default function CustomerTable({
   if (customers.length === 0) {
     return (
       <div className="p-12 text-center">
-        <svg
-          className="w-12 h-12 text-muted-foreground mx-auto mb-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
+        <UsersGroupIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground">No hay clientes</p>
         <p className="text-sm text-muted-foreground mt-1">
           Añade tu primer cliente haciendo clic en "Nuevo Cliente"
@@ -170,7 +106,12 @@ export default function CustomerTable({
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">{customer.name}</p>
+                    <Link
+                      href={`/customers/${customer.id}`}
+                      className="font-medium text-foreground hover:text-section-clients transition-colors"
+                    >
+                      {customer.name}
+                    </Link>
                     <p className="text-xs text-muted-foreground">
                       {new Date(customer.createdAt).toLocaleDateString("es-ES")}
                     </p>
@@ -194,10 +135,10 @@ export default function CustomerTable({
                 {customer.dni || "-"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {getCategoryBadge(customer.category)}
+                <CategoryBadge category={customer.category} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {getStatusBadge(customer.status)}
+                <CustomerStatusBadge status={customer.status} />
               </td>
               <td className="px-6 py-4">
                 {customer.workers.length > 0 ? (

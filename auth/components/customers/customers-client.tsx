@@ -5,6 +5,7 @@ import CustomerTable from "./customer-table";
 import CustomerModal from "./customer-modal";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { UsersIcon, PlusIcon } from "@/components/ui/icons";
 
 interface Worker {
   id: string;
@@ -154,9 +155,7 @@ export default function CustomersClient() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <span className="w-9 h-9 bg-section-clients-light border border-section-clients-border rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-section-clients" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <UsersIcon className="w-5 h-5 text-section-clients" />
             </span>
             Clientes
           </h1>
@@ -168,9 +167,7 @@ export default function CustomersClient() {
           onClick={handleAddCustomer}
           className="inline-flex items-center justify-center font-semibold rounded-xl px-4 py-2.5 text-sm text-white bg-section-clients hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-section-clients shadow-md transition-all"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <PlusIcon className="w-5 h-5 mr-2" />
           Nuevo Cliente
         </button>
       </div>

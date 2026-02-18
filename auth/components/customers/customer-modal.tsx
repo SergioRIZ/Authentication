@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Button from "@/components/ui/buttons";
 import Input from "@/components/ui/input";
+import { CloseIcon } from "@/components/ui/icons";
 
 interface Worker {
   id: string;
@@ -23,14 +24,20 @@ interface Customer {
   notes: string | null;
   category: "PREMIUM" | "REGULAR" | "OCCASIONAL";
   status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
   workers: Worker[];
+  createdBy: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
 }
 
 interface CustomerModalProps {
   customer: Customer | null;
   workers: Worker[];
   onClose: () => void;
-  onSaved: (customer: any) => void;
+  onSaved: (customer: Customer) => void;
 }
 
 export default function CustomerModal({
@@ -175,9 +182,7 @@ export default function CustomerModal({
             className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Cerrar modal"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
 
@@ -248,7 +253,7 @@ export default function CustomerModal({
                 </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as Customer["category"] })}
                   className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients"
                 >
                   <option value="PREMIUM">Premium</option>
@@ -263,7 +268,7 @@ export default function CustomerModal({
                 </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as Customer["status"] })}
                   className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients"
                 >
                   <option value="ACTIVE">Activo</option>

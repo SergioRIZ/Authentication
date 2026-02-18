@@ -1,55 +1,59 @@
 @import "tailwindcss";
 
+/* Tell Tailwind v4 to use class-based dark mode (.dark on <html>)
+   instead of the default prefers-color-scheme media query */
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --border: #e5e7eb;
-  --primary: #2563eb;
+  --background: #f0fdfa;
+  --foreground: #0f172a;
+  --muted: #e6f7f4;
+  --muted-foreground: #4a6670;
+  --border: #b2dfdb;
+  --primary: #0f766e;
   --primary-foreground: #ffffff;
-  --accent: #3b82f6;
+  --accent: #14b8a6;
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #0f172a;
   --destructive: #dc2626;
-  --success: #16a34a;
+  --success: #059669;
 
   /* Section accent colors — light */
-  --section-tasks: #4f46e5;
-  --section-tasks-light: #eef2ff;
-  --section-tasks-border: #c7d2fe;
+  --section-tasks: #0e7490;
+  --section-tasks-light: #ecfeff;
+  --section-tasks-border: #a5f3fc;
   --section-clients: #0d9488;
   --section-clients-light: #f0fdfa;
   --section-clients-border: #99f6e4;
-  --section-admin: #7c3aed;
+  --section-admin: #5b21b6;
   --section-admin-light: #f5f3ff;
   --section-admin-border: #ddd6fe;
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --border: #334155;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --accent: #60a5fa;
-  --card: #1e293b;
-  --card-foreground: #f1f5f9;
+  --background: #0c1a27;
+  --foreground: #e2f1f0;
+  --muted: #13293d;
+  --muted-foreground: #8ab4bf;
+  --border: #1e3a4a;
+  --primary: #14b8a6;
+  --primary-foreground: #042f2e;
+  --accent: #2dd4bf;
+  --card: #13293d;
+  --card-foreground: #e2f1f0;
   --destructive: #ef4444;
-  --success: #22c55e;
+  --success: #34d399;
 
   /* Section accent colors — dark */
-  --section-tasks: #818cf8;
-  --section-tasks-light: rgba(99, 102, 241, 0.1);
-  --section-tasks-border: rgba(99, 102, 241, 0.3);
+  --section-tasks: #22d3ee;
+  --section-tasks-light: rgba(34, 211, 238, 0.1);
+  --section-tasks-border: rgba(34, 211, 238, 0.3);
   --section-clients: #2dd4bf;
-  --section-clients-light: rgba(20, 184, 166, 0.1);
-  --section-clients-border: rgba(20, 184, 166, 0.3);
+  --section-clients-light: rgba(45, 212, 191, 0.1);
+  --section-clients-border: rgba(45, 212, 191, 0.3);
   --section-admin: #a78bfa;
-  --section-admin-light: rgba(139, 92, 246, 0.1);
-  --section-admin-border: rgba(139, 92, 246, 0.3);
+  --section-admin-light: rgba(167, 139, 250, 0.1);
+  --section-admin-border: rgba(167, 139, 250, 0.3);
 }
 
 @theme inline {
@@ -84,9 +88,36 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Smooth transitions for theme changes */
-* {
+/*
+ * Theme-change transitions — scoped to body and direct children
+ * instead of the universal * selector, which forces the browser to
+ * create transition timers on every DOM node and causes unexpected
+ * animations on elements like inputs, modals, and dropdowns.
+ */
+body,
+body > div,
+nav,
+main,
+header,
+footer,
+section {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+/*
+ * Respect user accessibility preference.
+ * Removes all transitions and animations for users who enabled
+ * "Reduce motion" in their OS settings.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Fix native select/option dark mode rendering */
@@ -138,4 +169,22 @@ select option {
 ::selection {
   background-color: var(--primary);
   color: var(--primary-foreground);
+}
+
+/*
+ * Badge pill — uses per-element CSS custom properties set via inline
+ * style in the React component.  This avoids Tailwind class-scanning
+ * issues with dynamically composed colour strings and guarantees the
+ * colours render in both light and dark mode.
+ */
+.badge-pill {
+  background-color: var(--badge-bg-light);
+  color: var(--badge-text-light);
+  border: 1px solid var(--badge-border-light);
+}
+
+.dark .badge-pill {
+  background-color: var(--badge-bg-dark);
+  color: var(--badge-text-dark);
+  border-color: var(--badge-border-dark);
 }

@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { SpinnerIcon, CheckIcon, CloseIcon } from "@/components/ui/icons";
 
 export default function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  
+
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 
@@ -45,31 +46,26 @@ export default function VerifyEmailContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
       <div className="max-w-md w-full">
-        <div className="bg-white py-8 px-6 shadow rounded-lg text-center">
+        <div className="bg-background border border-border py-8 px-6 shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl text-center">
           {status === "loading" && (
             <>
-              <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              <h2 className="text-xl font-semibold text-gray-900">Verificando tu email...</h2>
+              <SpinnerIcon className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-foreground">Verificando tu email...</h2>
             </>
           )}
 
           {status === "success" && (
             <>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">{message}</h2>
-              <p className="text-gray-600 mb-6">Ya puedes iniciar sesión en tu cuenta.</p>
+              <h2 className="text-xl font-semibold text-foreground mb-2">{message}</h2>
+              <p className="text-muted-foreground mb-6">Ya puedes iniciar sesión en tu cuenta.</p>
               <Link
                 href="/login"
-                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
               >
                 Iniciar sesión
               </Link>
@@ -78,23 +74,21 @@ export default function VerifyEmailContent() {
 
           {status === "error" && (
             <>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CloseIcon className="w-8 h-8 text-red-600 dark:text-red-400" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Error de verificación</h2>
-              <p className="text-gray-600 mb-6">{message}</p>
+              <h2 className="text-xl font-semibold text-foreground mb-2">Error de verificación</h2>
+              <p className="text-muted-foreground mb-6">{message}</p>
               <div className="space-y-3">
                 <Link
                   href="/resend-verification"
-                  className="block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="block bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
                 >
                   Solicitar nuevo enlace
                 </Link>
                 <Link
                   href="/login"
-                  className="block text-blue-600 hover:text-blue-500"
+                  className="block text-primary hover:text-primary/80"
                 >
                   Volver al login
                 </Link>

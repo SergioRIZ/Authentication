@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Button from "@/components/ui/buttons";
 import Input from "@/components/ui/input";
+import { CloseIcon } from "@/components/ui/icons";
 
 interface Worker {
   id: string;
@@ -25,8 +26,16 @@ interface Task {
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate: string | null;
   startDate: string | null;
+  completedAt: string | null;
+  createdAt: string;
   workers: Worker[];
   customerId: string | null;
+  createdBy: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+  customer: Customer | null;
 }
 
 interface TaskModalProps {
@@ -34,7 +43,7 @@ interface TaskModalProps {
   workers: Worker[];
   customers: Customer[];
   onClose: () => void;
-  onSaved: (task: any) => void;
+  onSaved: (task: Task) => void;
 }
 
 export default function TaskModal({
@@ -185,9 +194,7 @@ export default function TaskModal({
             className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Cerrar modal"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
 
@@ -240,7 +247,7 @@ export default function TaskModal({
                 </label>
                 <select
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as Task["status"] })}
                   className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
                 >
                   <option value="PENDING">Pendiente</option>
@@ -255,7 +262,7 @@ export default function TaskModal({
                 </label>
                 <select
                   value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as Task["priority"] })}
                   className="w-full px-4 py-2.5 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks"
                 >
                   <option value="LOW">Baja</option>

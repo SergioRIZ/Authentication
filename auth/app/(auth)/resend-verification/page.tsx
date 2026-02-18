@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/buttons";
+import { CheckIcon } from "@/components/ui/icons";
 
 export default function ResendVerificationPage() {
   const [email, setEmail] = useState("");
@@ -37,29 +38,27 @@ export default function ResendVerificationPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Reenviar verificación</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-3xl font-bold text-foreground">Reenviar verificación</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
             Introduce tu email para recibir un nuevo enlace de verificación
           </p>
         </div>
 
-        <div className="bg-white py-8 px-6 shadow rounded-lg">
+        <div className="bg-background border border-border py-8 px-6 shadow-xl shadow-black/5 dark:shadow-black/20 rounded-2xl">
           {success ? (
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Si el email existe y no está verificado, recibirás un nuevo enlace.
               </p>
               <Link
                 href="/login"
-                className="text-blue-600 hover:text-blue-500 font-medium"
+                className="text-primary hover:text-primary/80 font-medium"
               >
                 Volver al login
               </Link>
@@ -67,7 +66,7 @@ export default function ResendVerificationPage() {
           ) : (
             <form onSubmit={onSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                   {error}
                 </div>
               )}
@@ -89,7 +88,7 @@ export default function ResendVerificationPage() {
               <div className="text-center">
                 <Link
                   href="/login"
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  className="text-sm text-primary hover:text-primary/80"
                 >
                   Volver al login
                 </Link>

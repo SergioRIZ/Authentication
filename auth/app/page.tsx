@@ -1,7 +1,59 @@
-"use client";
-
+import { type ReactNode } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  CompanyLogo, CompanyBanner, UsersGroupIcon, ClipboardListIcon,
+  BarChartIcon, LockIcon, CalendarIcon, EmailIcon,
+} from "@/components/ui/icons";
+
+const features: { icon: ReactNode; title: string; description: string; color: string }[] = [
+  {
+    icon: <UsersGroupIcon className="w-6 h-6 text-teal-600 dark:text-teal-400" />,
+    title: "Gestion de Clientes",
+    description: "Mantiene todos los datos de tus clientes organizados. Historial, contactos y seguimiento en un solo lugar.",
+    color: "teal",
+  },
+  {
+    icon: <ClipboardListIcon className="w-6 h-6 text-green-600 dark:text-green-400" />,
+    title: "Control de Equipos",
+    description: "Asigna tareas, monitorea el progreso y gestiona los horarios de tu equipo de trabajo de forma eficiente.",
+    color: "green",
+  },
+  {
+    icon: <BarChartIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
+    title: "Reportes y Analisis",
+    description: "Visualiza metricas clave de rendimiento. Toma decisiones informadas con datos en tiempo real.",
+    color: "purple",
+  },
+  {
+    icon: <LockIcon className="w-6 h-6 text-amber-600 dark:text-amber-400" />,
+    title: "Seguridad Avanzada",
+    description: "Autenticacion de dos factores, control de acceso por roles y registro de actividad para maxima seguridad.",
+    color: "amber",
+  },
+  {
+    icon: <CalendarIcon className="w-6 h-6 text-rose-600 dark:text-rose-400" />,
+    title: "Calendario Integrado",
+    description: "Programa citas, reuniones y eventos. Sincroniza con tu equipo y nunca pierdas una fecha importante.",
+    color: "rose",
+  },
+  {
+    icon: <EmailIcon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />,
+    title: "Notificaciones",
+    description: "Mantente al dia con alertas por email. Recordatorios automaticos para ti y tu equipo.",
+    color: "cyan",
+  },
+];
+
+// Tailwind needs full class names at build time — map color tokens to concrete classes.
+const colorStyles: Record<string, { border: string; shadow: string; bg: string }> = {
+  teal:   { border: "hover:border-teal-300 dark:hover:border-teal-700",     shadow: "hover:shadow-teal-500/5",   bg: "bg-teal-100 dark:bg-teal-900/30" },
+  green:  { border: "hover:border-green-300 dark:hover:border-green-700",   shadow: "hover:shadow-green-500/5",  bg: "bg-green-100 dark:bg-green-900/30" },
+  purple: { border: "hover:border-purple-300 dark:hover:border-purple-700", shadow: "hover:shadow-purple-500/5", bg: "bg-purple-100 dark:bg-purple-900/30" },
+  amber:  { border: "hover:border-amber-300 dark:hover:border-amber-700",   shadow: "hover:shadow-amber-500/5",  bg: "bg-amber-100 dark:bg-amber-900/30" },
+  rose:   { border: "hover:border-rose-300 dark:hover:border-rose-700",     shadow: "hover:shadow-rose-500/5",   bg: "bg-rose-100 dark:bg-rose-900/30" },
+  cyan:   { border: "hover:border-cyan-300 dark:hover:border-cyan-700",     shadow: "hover:shadow-cyan-500/5",   bg: "bg-cyan-100 dark:bg-cyan-900/30" },
+};
 
 export default function Home() {
   return (
@@ -10,14 +62,13 @@ export default function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-md shadow-primary/20">
-                <svg className="w-5 h-5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
+            {/* Logo / Banner */}
+            <div className="flex items-center shrink-0">
+              <CompanyBanner className="hidden sm:block h-10 w-auto max-w-[220px] rounded-lg shadow-md shadow-primary/20" />
+              <div className="sm:hidden flex items-center gap-2.5">
+                <CompanyLogo className="w-9 h-9 shadow-md shadow-primary/20" />
+                <span className="text-xl font-bold text-foreground tracking-tight">SerTEC</span>
               </div>
-              <span className="text-xl font-bold text-foreground tracking-tight">SerTEC</span>
             </div>
 
             {/* Right side */}
@@ -50,7 +101,7 @@ export default function Home() {
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground mb-6 leading-tight tracking-tight">
               Gestiona tu equipo y clientes en{" "}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">un solo lugar</span>
+              <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">un solo lugar</span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
               Optimiza las operaciones de tu negocio con nuestra plataforma integral.
@@ -71,6 +122,13 @@ export default function Home() {
               </Link>
             </div>
           </div>
+
+          {/* Company Banner */}
+          <div className="mt-16 max-w-5xl mx-auto">
+            <div className="rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border">
+              <CompanyBanner className="w-full h-auto" />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -87,83 +145,23 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Feature 1 */}
-            <div className="group p-6 bg-background rounded-2xl border border-border hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg hover:shadow-blue-500/5 transition-all">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Gestion de Clientes</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Mantiene todos los datos de tus clientes organizados. Historial, contactos y seguimiento en un solo lugar.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="group p-6 bg-background rounded-2xl border border-border hover:border-green-300 dark:hover:border-green-700 hover:shadow-lg hover:shadow-green-500/5 transition-all">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Control de Equipos</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Asigna tareas, monitorea el progreso y gestiona los horarios de tu equipo de trabajo de forma eficiente.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="group p-6 bg-background rounded-2xl border border-border hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg hover:shadow-purple-500/5 transition-all">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Reportes y Analisis</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Visualiza metricas clave de rendimiento. Toma decisiones informadas con datos en tiempo real.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="group p-6 bg-background rounded-2xl border border-border hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-lg hover:shadow-amber-500/5 transition-all">
-              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Seguridad Avanzada</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Autenticacion de dos factores, control de acceso por roles y registro de actividad para maxima seguridad.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="group p-6 bg-background rounded-2xl border border-border hover:border-rose-300 dark:hover:border-rose-700 hover:shadow-lg hover:shadow-rose-500/5 transition-all">
-              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Calendario Integrado</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Programa citas, reuniones y eventos. Sincroniza con tu equipo y nunca pierdas una fecha importante.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="group p-6 bg-background rounded-2xl border border-border hover:border-cyan-300 dark:hover:border-cyan-700 hover:shadow-lg hover:shadow-cyan-500/5 transition-all">
-              <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <svg className="w-6 h-6 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Notificaciones</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Mantente al dia con alertas por email. Recordatorios automaticos para ti y tu equipo.
-              </p>
-            </div>
+            {features.map((feature) => {
+              const styles = colorStyles[feature.color];
+              return (
+                <div
+                  key={feature.title}
+                  className={`group p-6 bg-background rounded-2xl border border-border ${styles.border} hover:shadow-lg ${styles.shadow} transition-all`}
+                >
+                  <div className={`w-12 h-12 ${styles.bg} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -190,11 +188,7 @@ export default function Home() {
       <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-border">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
+            <CompanyLogo className="w-7 h-7" />
             <span className="text-sm font-semibold text-foreground">SerTEC</span>
           </div>
           <p className="text-sm text-muted-foreground">

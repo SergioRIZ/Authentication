@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { createPortal } from "react-dom";
+import { CheckIcon, CloseIcon, InfoIcon } from "@/components/ui/icons";
 
 // --- Types ---
 type ToastType = "success" | "error" | "info";
@@ -88,21 +89,9 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   };
 
   const icons = {
-    success: (
-      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
-    ),
-    error: (
-      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    ),
-    info: (
-      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
+    success: <CheckIcon className="w-5 h-5 shrink-0" />,
+    error: <CloseIcon className="w-5 h-5 shrink-0" />,
+    info: <InfoIcon className="w-5 h-5 shrink-0" />,
   };
 
   return (
@@ -120,9 +109,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
         className="ml-auto shrink-0 opacity-70 hover:opacity-100 transition-opacity"
         aria-label="Cerrar notificacion"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <CloseIcon className="w-4 h-4" />
       </button>
     </div>
   );

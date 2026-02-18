@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
+import { SpinnerIcon } from "@/components/ui/icons";
+import { RoleBadge, VerificationBadge } from "@/components/ui/badges";
 
 interface User {
   id: string;
@@ -187,36 +189,10 @@ export default function AdminUsersTable() {
     return [{ value: "USER", label: "Usuario" }];
   }
 
-  function getRoleBadge(role: string) {
-    switch (role) {
-      case "SUPER_ADMIN":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-section-admin-light text-section-admin border border-section-admin-border rounded-full">
-            Super Admin
-          </span>
-        );
-      case "ADMIN":
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full">
-            Admin
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">
-            Usuario
-          </span>
-        );
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="p-12 text-center">
-        <svg className="animate-spin h-8 w-8 text-primary mx-auto" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
+        <SpinnerIcon className="animate-spin h-8 w-8 text-primary mx-auto" />
       </div>
     );
   }
@@ -276,15 +252,7 @@ export default function AdminUsersTable() {
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {user.emailVerified ? (
-                  <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
-                    Verificado
-                  </span>
-                ) : (
-                  <span className="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full">
-                    Pendiente
-                  </span>
-                )}
+                <VerificationBadge verified={!!user.emailVerified} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {canEditRole(user.role) ? (
@@ -305,7 +273,7 @@ export default function AdminUsersTable() {
                     )}
                   </select>
                 ) : (
-                  getRoleBadge(user.role)
+                  <RoleBadge role={user.role} />
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">

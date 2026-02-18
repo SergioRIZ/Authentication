@@ -50,7 +50,7 @@ export default function VerifyEmailContent() {
         <div className="bg-white py-8 px-6 shadow rounded-lg text-center">
           {status === "loading" && (
             <>
-              <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-12 w-12 text-teal-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -69,7 +69,7 @@ export default function VerifyEmailContent() {
               <p className="text-gray-600 mb-6">Ya puedes iniciar sesión en tu cuenta.</p>
               <Link
                 href="/login"
-                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors"
               >
                 Iniciar sesión
               </Link>
@@ -88,13 +88,13 @@ export default function VerifyEmailContent() {
               <div className="space-y-3">
                 <Link
                   href="/resend-verification"
-                  className="block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="block bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors"
                 >
                   Solicitar nuevo enlace
                 </Link>
                 <Link
                   href="/login"
-                  className="block text-blue-600 hover:text-blue-500"
+                  className="block text-teal-600 hover:text-teal-500"
                 >
                   Volver al login
                 </Link>

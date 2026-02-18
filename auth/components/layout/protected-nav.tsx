@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MenuIcon, CompanyLogo, CompanyBanner, CloseIcon } from "@/components/ui/icons";
 
 interface ProtectedNavProps {
   user: {
@@ -68,28 +69,13 @@ export function ProtectedNav({ user, signOutAction }: ProtectedNavProps) {
                 className="md:hidden p-2 -ml-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Abrir menu de navegacion"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <MenuIcon />
               </button>
 
-              <Link href="/dashboard" className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-linear-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-md shadow-primary/20">
-                  <svg
-                    className="w-5 h-5 text-primary-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <span className="text-xl font-bold text-foreground hidden sm:inline tracking-tight">SerTEC</span>
+              <Link href="/dashboard" className="flex items-center shrink-0">
+                {/* Banner on desktop, logo on small screens */}
+                <CompanyBanner className="hidden sm:block h-10 w-auto max-w-[220px] rounded-lg shadow-md shadow-primary/20" />
+                <CompanyLogo className="sm:hidden w-9 h-9 shadow-md shadow-primary/20" />
               </Link>
 
               {/* Desktop navigation links */}
@@ -159,32 +145,15 @@ export function ProtectedNav({ user, signOutAction }: ProtectedNavProps) {
           <div className="absolute top-0 left-0 bottom-0 w-72 bg-background border-r border-border shadow-2xl flex flex-col animate-[slideIn_0.2s_ease-out]">
             {/* Drawer header */}
             <div className="flex items-center justify-between px-4 h-16 border-b border-border shrink-0">
-              <Link href="/dashboard" onClick={closeMobileMenu} className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-linear-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-md shadow-primary/20">
-                  <svg
-                    className="w-5 h-5 text-primary-foreground"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <span className="text-xl font-bold text-foreground tracking-tight">SerTEC</span>
+              <Link href="/dashboard" onClick={closeMobileMenu} className="flex items-center">
+                <CompanyBanner className="h-10 w-auto max-w-[200px] rounded-lg shadow-md shadow-primary/20" />
               </Link>
               <button
                 onClick={closeMobileMenu}
                 className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Cerrar menu"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <CloseIcon />
               </button>
             </div>
 

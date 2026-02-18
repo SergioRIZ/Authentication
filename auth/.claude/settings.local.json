@@ -6,7 +6,16 @@
       "Bash(node -e:*)",
       "Bash(npx next build:*)",
       "Bash(npx jest --passWithNoTests)",
-      "Bash(npx jest)"
+      "Bash(npx jest)",
+      "Bash(ls:*)",
+      "Bash(find \"app/\\(protected\\)\" -name \"layout.tsx\" -o -name \"page.tsx\")",
+      "Bash(find \"app/\\(protected\\)\" -name \"layout.tsx\" -type f)",
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "Bash(du:*)",
+      "Bash(npx tailwindcss --help:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(findstr:*)"
     ]
   }
 }
