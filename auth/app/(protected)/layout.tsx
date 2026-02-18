@@ -34,9 +34,9 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background lg:flex">
       <ProtectedSidebar user={user} signOutAction={handleSignOut} />
-      <main className="flex-1 min-w-0 overflow-auto">
+      <main className="flex-1 min-w-0">
         {children}
       </main>
     </div>
