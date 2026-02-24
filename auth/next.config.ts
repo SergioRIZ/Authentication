@@ -49,6 +49,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactCompiler: true,
   serverExternalPackages: ['@prisma/client', 'bcryptjs'],
+  turbopack: {
+    root: __dirname,
+  },
   async headers() {
     return [
       {

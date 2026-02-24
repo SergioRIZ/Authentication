@@ -28,7 +28,8 @@ export type AuditAction =
   | "TASK_CREATED"
   | "TASK_UPDATED"
   | "TASK_DELETED"
-  | "TASK_STATUS_CHANGED";
+  | "TASK_STATUS_CHANGED"
+  | "WORKER_PROFILE_UPDATED";
 
 interface AuditLogParams {
   userId?: string | null;
@@ -50,7 +51,7 @@ export async function logAuditEvent({
   userAgent,
 }: AuditLogParams): Promise<void> {
   try {
-    await (prisma as any).auditLog.create({
+    await prisma.auditLog.create({
       data: {
         userId: userId || null,
         action,

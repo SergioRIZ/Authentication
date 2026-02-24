@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { CalendarTask } from "./calendar-client";
 
 interface CalendarDay {
@@ -15,14 +14,24 @@ interface CalendarGridProps {
   year: number;
   month: number;
   tasksByDay: Map<number, CalendarTask[]>;
+  onTaskClick: (task: CalendarTask) => void;
 }
 
 const WEEKDAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
-const STATUS_BORDER: Record<string, string> = {
-  PENDING: "border-l-amber-500",
-  IN_PROGRESS: "border-l-cyan-600 dark:border-l-cyan-400",
-  COMPLETED: "border-l-green-500",
+const STATUS_STYLES: Record<string, { border: string; bg: string }> = {
+  PENDING: {
+    border: "border-l-amber-500",
+    bg: "bg-amber-50 dark:bg-amber-900/15",
+  },
+  IN_PROGRESS: {
+    border: "border-l-cyan-600 dark:border-l-cyan-400",
+    bg: "bg-cyan-50 dark:bg-cyan-900/15",
+  },
+  COMPLETED: {
+    border: "border-l-green-500",
+    bg: "bg-green-50 dark:bg-green-900/15",
+  },
 };
 
 const PRIORITY_DOT: Record<string, string> = {
@@ -30,6 +39,15 @@ const PRIORITY_DOT: Record<string, string> = {
   MEDIUM: "bg-amber-500",
   LOW: "bg-gray-400",
 };
+
+function isOverdue(task: CalendarTask): boolean {
+  if (task.status === "COMPLETED" || !task.dueDate) return false;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const due = new Date(task.dueDate);
+  due.setHours(0, 0, 0, 0);
+  return due < now;
+}
 
 function generateCalendarDays(year: number, month: number): CalendarDay[] {
   const today = new Date();
@@ -75,7 +93,7 @@ function generateCalendarDays(year: number, month: number): CalendarDay[] {
   return days;
 }
 
-export default function CalendarGrid({ year, month, tasksByDay }: CalendarGridProps) {
+export default function CalendarGrid({ year, month, tasksByDay, onTaskClick }: CalendarGridProps) {
   const days = generateCalendarDays(year, month);
   const MAX_VISIBLE = 3;
 
@@ -95,19 +113,19 @@ export default function CalendarGrid({ year, month, tasksByDay }: CalendarGridPr
 
       {/* Day cells */}
       <div className="grid grid-cols-7 border-t border-section-tasks-border">
-        {days.map((day, i) => {
+        {days.map((day) => {
           const dayTasks = day.isCurrentMonth ? tasksByDay.get(day.date) || [] : [];
           const hasOverflow = dayTasks.length > MAX_VISIBLE;
           const visibleTasks = dayTasks.slice(0, MAX_VISIBLE);
 
           return (
             <div
-              key={i}
+              key={`${day.year}-${day.month}-${day.date}`}
               className={`min-h-[110px] border-b border-r border-border p-1.5 transition-colors ${
                 day.isCurrentMonth ? "bg-background" : "bg-muted/30"
-              } ${day.isToday ? "ring-2 ring-inset ring-section-tasks bg-section-tasks-light/50" : ""}`}
+              } ${day.isToday ? "ring-2 ring-inset ring-section-tasks bg-section-tasks-light/60 shadow-sm shadow-section-tasks/10" : ""}`}
             >
-              {/* Day number */}
+              {/* Day number + task count */}
               <div className="flex items-center justify-between mb-1">
                 <span
                   className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${
@@ -120,35 +138,48 @@ export default function CalendarGrid({ year, month, tasksByDay }: CalendarGridPr
                 >
                   {day.date}
                 </span>
+                {dayTasks.length > 0 && (
+                  <span className="text-[10px] font-semibold text-section-tasks bg-section-tasks-light rounded-full px-1.5 py-0.5 leading-none">
+                    {dayTasks.length}
+                  </span>
+                )}
               </div>
 
               {/* Tasks */}
               <div className="space-y-0.5">
-                {visibleTasks.map((task) => (
-                  <Link
-                    key={task.id}
-                    href={`/tasks/${task.id}`}
-                    className={`block px-1.5 py-0.5 text-[11px] leading-tight rounded border-l-2 ${
-                      STATUS_BORDER[task.status] || STATUS_BORDER.PENDING
-                    } bg-muted/50 hover:bg-muted transition-colors truncate group`}
-                    title={task.title}
-                  >
-                    <span className="flex items-center gap-1">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                          PRIORITY_DOT[task.priority] || PRIORITY_DOT.LOW
-                        }`}
-                      />
-                      <span className={`truncate ${
-                        task.status === "COMPLETED"
-                          ? "text-muted-foreground line-through"
-                          : "text-foreground group-hover:text-section-tasks"
-                      }`}>
-                        {task.title}
+                {visibleTasks.map((task) => {
+                  const styles = STATUS_STYLES[task.status] || STATUS_STYLES.PENDING;
+                  const overdue = isOverdue(task);
+
+                  return (
+                    <button
+                      key={task.id}
+                      onClick={() => onTaskClick(task)}
+                      className={`block w-full text-left px-1.5 py-0.5 text-[11px] leading-tight rounded border-l-2 ${
+                        styles.border
+                      } ${styles.bg} hover:brightness-95 dark:hover:brightness-125 transition-all truncate group cursor-pointer`}
+                      title={task.title}
+                    >
+                      <span className="flex items-center gap-1">
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            PRIORITY_DOT[task.priority] || PRIORITY_DOT.LOW
+                          }`}
+                        />
+                        {overdue && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" title="Vencida" />
+                        )}
+                        <span className={`truncate ${
+                          task.status === "COMPLETED"
+                            ? "text-muted-foreground line-through"
+                            : "text-foreground group-hover:text-section-tasks"
+                        }`}>
+                          {task.title}
+                        </span>
                       </span>
-                    </span>
-                  </Link>
-                ))}
+                    </button>
+                  );
+                })}
                 {hasOverflow && (
                   <p className="text-[10px] text-muted-foreground px-1.5">
                     +{dayTasks.length - MAX_VISIBLE} mas

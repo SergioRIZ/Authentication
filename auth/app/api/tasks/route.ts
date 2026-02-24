@@ -5,6 +5,7 @@ import { taskSchema, updateTaskSchema } from "@/lib/validations/task";
 import { logAuditEvent, getAuditIp, getAuditUserAgent } from "@/lib/audit";
 import { validateWorkerAssignment } from "@/lib/worker-assignment";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 
 // GET - List tasks (filtered by assignment for regular users)
 export async function GET(request: Request) {
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
     const pageParam = searchParams.get("page");
     const limitParam = searchParams.get("limit");
 
-    const where: any = {};
+    const where: Prisma.TaskWhereInput = {};
 
     // Regular users can only see tasks assigned to them or created by them
     if (!isAdmin) {
@@ -46,11 +47,11 @@ export async function GET(request: Request) {
     }
 
     if (status && ["PENDING", "IN_PROGRESS", "COMPLETED"].includes(status)) {
-      where.status = status;
+      where.status = status as "PENDING" | "IN_PROGRESS" | "COMPLETED";
     }
 
     if (priority && ["LOW", "MEDIUM", "HIGH"].includes(priority)) {
-      where.priority = priority;
+      where.priority = priority as "LOW" | "MEDIUM" | "HIGH";
     }
 
     if (customerId) {
@@ -61,15 +62,16 @@ export async function GET(request: Request) {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
     if (from || to) {
-      const dueDateFilter: any = {};
+      const dueDateFilter: { gte?: Date; lte?: Date } = {};
       if (from) dueDateFilter.gte = new Date(from);
       if (to) dueDateFilter.lte = new Date(to);
       where.dueDate = dueDateFilter;
     }
 
     if (search) {
+      const existingAnd = Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : [];
       where.AND = [
-        ...(where.AND || []),
+        ...existingAnd,
         {
           OR: [
             { title: { contains: search, mode: "insensitive" } },
@@ -284,7 +286,18 @@ export async function PATCH(request: Request) {
     }
 
     // Build update data
-    const updateData: any = {};
+    type TaskUpdateData = {
+      title?: string;
+      description?: string | null;
+      status?: "PENDING" | "IN_PROGRESS" | "COMPLETED";
+      completedAt?: Date | null;
+      priority?: "LOW" | "MEDIUM" | "HIGH";
+      dueDate?: Date | null;
+      startDate?: Date | null;
+      customerId?: string | null;
+      workers?: { set: { id: string }[] };
+    };
+    const updateData: TaskUpdateData = {};
     const oldStatus = existingTask.status;
 
     if (validatedData.title !== undefined) updateData.title = validatedData.title;

@@ -1,6 +1,5 @@
 import { type ReactNode } from "react";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   CompanyLogo, CompanyBanner, UsersGroupIcon, ClipboardListIcon,
   BarChartIcon, LockIcon, CalendarIcon, EmailIcon,
@@ -8,56 +7,57 @@ import {
 
 const features: { icon: ReactNode; title: string; description: string; color: string }[] = [
   {
-    icon: <UsersGroupIcon className="w-6 h-6 text-teal-600 dark:text-teal-400" />,
+    icon: <UsersGroupIcon className="w-6 h-6 text-teal-400" />,
     title: "Gestion de Clientes",
     description: "Mantiene todos los datos de tus clientes organizados. Historial, contactos y seguimiento en un solo lugar.",
     color: "teal",
   },
   {
-    icon: <ClipboardListIcon className="w-6 h-6 text-green-600 dark:text-green-400" />,
+    icon: <ClipboardListIcon className="w-6 h-6 text-green-400" />,
     title: "Control de Equipos",
     description: "Asigna tareas, monitorea el progreso y gestiona los horarios de tu equipo de trabajo de forma eficiente.",
     color: "green",
   },
   {
-    icon: <BarChartIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
+    icon: <BarChartIcon className="w-6 h-6 text-purple-400" />,
     title: "Reportes y Analisis",
     description: "Visualiza metricas clave de rendimiento. Toma decisiones informadas con datos en tiempo real.",
     color: "purple",
   },
   {
-    icon: <LockIcon className="w-6 h-6 text-amber-600 dark:text-amber-400" />,
+    icon: <LockIcon className="w-6 h-6 text-amber-400" />,
     title: "Seguridad Avanzada",
     description: "Autenticacion de dos factores, control de acceso por roles y registro de actividad para maxima seguridad.",
     color: "amber",
   },
   {
-    icon: <CalendarIcon className="w-6 h-6 text-rose-600 dark:text-rose-400" />,
+    icon: <CalendarIcon className="w-6 h-6 text-rose-400" />,
     title: "Calendario Integrado",
     description: "Programa citas, reuniones y eventos. Sincroniza con tu equipo y nunca pierdas una fecha importante.",
     color: "rose",
   },
   {
-    icon: <EmailIcon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />,
+    icon: <EmailIcon className="w-6 h-6 text-cyan-400" />,
     title: "Notificaciones",
     description: "Mantente al dia con alertas por email. Recordatorios automaticos para ti y tu equipo.",
     color: "cyan",
   },
 ];
 
-// Tailwind needs full class names at build time — map color tokens to concrete classes.
+// Fixed dark-mode colour classes — no light variants needed.
 const colorStyles: Record<string, { border: string; shadow: string; bg: string }> = {
-  teal:   { border: "hover:border-teal-300 dark:hover:border-teal-700",     shadow: "hover:shadow-teal-500/5",   bg: "bg-teal-100 dark:bg-teal-900/30" },
-  green:  { border: "hover:border-green-300 dark:hover:border-green-700",   shadow: "hover:shadow-green-500/5",  bg: "bg-green-100 dark:bg-green-900/30" },
-  purple: { border: "hover:border-purple-300 dark:hover:border-purple-700", shadow: "hover:shadow-purple-500/5", bg: "bg-purple-100 dark:bg-purple-900/30" },
-  amber:  { border: "hover:border-amber-300 dark:hover:border-amber-700",   shadow: "hover:shadow-amber-500/5",  bg: "bg-amber-100 dark:bg-amber-900/30" },
-  rose:   { border: "hover:border-rose-300 dark:hover:border-rose-700",     shadow: "hover:shadow-rose-500/5",   bg: "bg-rose-100 dark:bg-rose-900/30" },
-  cyan:   { border: "hover:border-cyan-300 dark:hover:border-cyan-700",     shadow: "hover:shadow-cyan-500/5",   bg: "bg-cyan-100 dark:bg-cyan-900/30" },
+  teal:   { border: "hover:border-teal-700",   shadow: "hover:shadow-teal-500/10",   bg: "bg-teal-900/30" },
+  green:  { border: "hover:border-green-700",  shadow: "hover:shadow-green-500/10",  bg: "bg-green-900/30" },
+  purple: { border: "hover:border-purple-700", shadow: "hover:shadow-purple-500/10", bg: "bg-purple-900/30" },
+  amber:  { border: "hover:border-amber-700",  shadow: "hover:shadow-amber-500/10",  bg: "bg-amber-900/30" },
+  rose:   { border: "hover:border-rose-700",   shadow: "hover:shadow-rose-500/10",   bg: "bg-rose-900/30" },
+  cyan:   { border: "hover:border-cyan-700",   shadow: "hover:shadow-cyan-500/10",   bg: "bg-cyan-900/30" },
 };
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
+    // "dark" class forces all Tailwind dark: utilities regardless of the user's theme toggle
+    <div className="dark min-h-screen bg-background">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,7 +73,6 @@ export default function Home() {
 
             {/* Right side */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              <ThemeToggle />
               <Link
                 href="/login"
                 className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SpinnerIcon, ClipboardIcon } from "@/components/ui/icons";
+import { SpinnerIcon, ClipboardIcon, PencilIcon, TrashIcon } from "@/components/ui/icons";
 import { TaskStatusBadge, PriorityBadge } from "@/components/ui/badges";
 
 interface Worker {
@@ -135,17 +135,8 @@ export default function TaskTable({
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <select
-                  value={task.status}
-                  onChange={(e) => onStatusChange(task.id, e.target.value as Task["status"])}
-                  className="text-xs font-medium bg-muted/50 border border-border text-foreground rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-section-tasks cursor-pointer"
-                >
-                  <option value="PENDING">Pendiente</option>
-                  <option value="IN_PROGRESS">En Progreso</option>
-                  <option value="COMPLETED">Completada</option>
-                </select>
                 <div className="mt-1">
-                  {<TaskStatusBadge status={task.status} />}
+                  <TaskStatusBadge status={task.status} />
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
@@ -208,19 +199,20 @@ export default function TaskTable({
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-1">
                   <button
                     onClick={() => onEdit(task)}
-                    className="text-sm text-section-tasks hover:opacity-80 font-medium transition-colors"
+                    title="Editar"
+                    className="p-1.5 text-muted-foreground hover:text-section-tasks hover:bg-section-tasks-light rounded-lg transition-colors"
                   >
-                    Editar
+                    <PencilIcon className="w-4 h-4" />
                   </button>
-                  <span className="text-muted-foreground">|</span>
                   <button
                     onClick={() => onDelete(task.id, task.title)}
-                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium transition-colors"
+                    title="Eliminar"
+                    className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
-                    Eliminar
+                    <TrashIcon className="w-4 h-4" />
                   </button>
                 </div>
               </td>

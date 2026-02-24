@@ -5,7 +5,7 @@ import TaskTable from "./task-table";
 import TaskModal from "./task-modal";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
-import { ClipboardIcon, PlusIcon } from "@/components/ui/icons";
+import { ClipboardIcon, PlusIcon, SearchIcon, ClockIcon, LightningIcon, CheckCircleIcon, WarningIcon } from "@/components/ui/icons";
 
 interface Worker {
   id: string;
@@ -77,7 +77,7 @@ export default function TasksClient() {
         setError(data.error || "Error al cargar tareas");
       }
     } catch (err) {
-      setError("Error de conexión");
+      setError("Error de conexiÃƒÂ³n");
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +130,7 @@ export default function TasksClient() {
   function handleDeleteTask(taskId: string, taskTitle: string) {
     setConfirmAction({
       title: "Eliminar tarea",
-      message: `¿Estás seguro de eliminar la tarea "${taskTitle}"?`,
+      message: `Ã‚Â¿EstÃƒÂ¡s seguro de eliminar la tarea "${taskTitle}"?`,
       onConfirm: async () => {
         setConfirmAction(null);
         try {
@@ -226,13 +226,14 @@ export default function TasksClient() {
       <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Search */}
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               placeholder="Buscar por titulo o descripcion..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks focus:border-section-tasks transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-tasks focus:border-section-tasks transition-all"
             />
           </div>
 
@@ -264,21 +265,41 @@ export default function TasksClient() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Pendientes</p>
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingTasks}</p>
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+            <ClockIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingTasks}</p>
+            <p className="text-xs text-muted-foreground">Pendientes</p>
+          </div>
         </div>
-        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">En Progreso</p>
-          <p className="text-2xl font-bold text-section-tasks">{inProgressTasks}</p>
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center shrink-0">
+            <LightningIcon className="w-5 h-5 text-section-tasks" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-section-tasks">{inProgressTasks}</p>
+            <p className="text-xs text-muted-foreground">En Progreso</p>
+          </div>
         </div>
-        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Completadas</p>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{completedTasks}</p>
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+            <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{completedTasks}</p>
+            <p className="text-xs text-muted-foreground">Completadas</p>
+          </div>
         </div>
-        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Vencidas</p>
-          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{overdueTasks}</p>
+        <div className="bg-section-tasks-light border border-section-tasks-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+            <WarningIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{overdueTasks}</p>
+            <p className="text-xs text-muted-foreground">Vencidas</p>
+          </div>
         </div>
       </div>
 

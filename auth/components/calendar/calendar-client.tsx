@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import CalendarGrid from "./calendar-grid";
 import CalendarMobileList from "./calendar-mobile-list";
+import CalendarTaskPreview from "./calendar-task-preview";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, SpinnerIcon } from "@/components/ui/icons";
 
 interface Worker {
@@ -48,22 +49,26 @@ export default function CalendarClient() {
   const [tasks, setTasks] = useState<CalendarTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedTask, setSelectedTask] = useState<CalendarTask | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  useEffect(() => {
-    fetchTasksForMonth();
-  }, [currentDate]);
+  const fetchTasksForMonth = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
-  async function fetchTasksForMonth() {
     setIsLoading(true);
     setError("");
     try {
       const from = new Date(year, month, 1).toISOString();
       const to = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
 
-      const response = await fetch(`/api/tasks?from=${from}&to=${to}`);
+      const response = await fetch(`/api/tasks?from=${from}&to=${to}`, {
+        signal: controller.signal,
+      });
       const data = await response.json();
 
       if (response.ok) {
@@ -71,12 +76,21 @@ export default function CalendarClient() {
       } else {
         setError(data.error || "Error al cargar tareas");
       }
-    } catch {
-      setError("Error de conexion");
+    } catch (err) {
+      if ((err as DOMException).name !== "AbortError") {
+        setError("Error de conexion");
+      }
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  }
+  }, [year, month]);
+
+  useEffect(() => {
+    fetchTasksForMonth();
+    return () => { abortRef.current?.abort(); };
+  }, [fetchTasksForMonth]);
 
   function goToPrevMonth() {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -182,6 +196,24 @@ export default function CalendarClient() {
             </span>
           </div>
         )}
+
+        {/* Color legend */}
+        {!isLoading && (
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2 pt-2 border-t border-section-tasks-border/50">
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="w-2.5 h-1 rounded-full bg-amber-500" /> Pendiente
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="w-2.5 h-1 rounded-full bg-cyan-500" /> En Progreso
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="w-2.5 h-1 rounded-full bg-green-500" /> Completada
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Vencida
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Error */}
@@ -200,14 +232,22 @@ export default function CalendarClient() {
         <>
           {/* Desktop Grid */}
           <div className="hidden lg:block">
-            <CalendarGrid year={year} month={month} tasksByDay={tasksByDay} />
+            <CalendarGrid year={year} month={month} tasksByDay={tasksByDay} onTaskClick={setSelectedTask} />
           </div>
 
           {/* Mobile List */}
           <div className="lg:hidden">
-            <CalendarMobileList year={year} month={month} tasksByDay={tasksByDay} />
+            <CalendarMobileList year={year} month={month} tasksByDay={tasksByDay} onTaskClick={setSelectedTask} />
           </div>
         </>
+      )}
+
+      {/* Task preview modal */}
+      {selectedTask && (
+        <CalendarTaskPreview
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
       )}
     </div>
   );

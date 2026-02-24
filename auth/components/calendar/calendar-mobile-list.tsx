@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { CalendarIcon } from "@/components/ui/icons";
 import { TaskStatusBadge, PriorityBadge } from "@/components/ui/badges";
 import type { CalendarTask } from "./calendar-client";
@@ -9,6 +8,7 @@ interface CalendarMobileListProps {
   year: number;
   month: number;
   tasksByDay: Map<number, CalendarTask[]>;
+  onTaskClick: (task: CalendarTask) => void;
 }
 
 function formatDayLabel(year: number, month: number, day: number): string {
@@ -25,7 +25,16 @@ function isToday(year: number, month: number, day: number): boolean {
   return day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
 }
 
-export default function CalendarMobileList({ year, month, tasksByDay }: CalendarMobileListProps) {
+function isOverdue(task: CalendarTask): boolean {
+  if (task.status === "COMPLETED" || !task.dueDate) return false;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const due = new Date(task.dueDate);
+  due.setHours(0, 0, 0, 0);
+  return due < now;
+}
+
+export default function CalendarMobileList({ year, month, tasksByDay, onTaskClick }: CalendarMobileListProps) {
   // Get sorted days that have tasks
   const daysWithTasks = Array.from(tasksByDay.keys()).sort((a, b) => a - b);
 
@@ -75,10 +84,10 @@ export default function CalendarMobileList({ year, month, tasksByDay }: Calendar
             {/* Tasks list */}
             <div className="divide-y divide-border">
               {tasks.map((task) => (
-                <Link
+                <button
                   key={task.id}
-                  href={`/tasks/${task.id}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+                  onClick={() => onTaskClick(task)}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors w-full text-left"
                 >
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm font-medium truncate ${
@@ -95,10 +104,15 @@ export default function CalendarMobileList({ year, month, tasksByDay }: Calendar
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
+                    {isOverdue(task) && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                        Vencida
+                      </span>
+                    )}
                     <TaskStatusBadge status={task.status} />
                     <PriorityBadge priority={task.priority} />
                   </div>
-                </Link>
+                </button>
               ))}
             </div>
           </div>

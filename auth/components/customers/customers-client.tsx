@@ -5,7 +5,7 @@ import CustomerTable from "./customer-table";
 import CustomerModal from "./customer-modal";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
-import { UsersIcon, PlusIcon } from "@/components/ui/icons";
+import { UsersIcon, PlusIcon, SearchIcon, CheckCircleIcon, StarIcon, WarningIcon } from "@/components/ui/icons";
 
 interface Worker {
   id: string;
@@ -70,7 +70,7 @@ export default function CustomersClient() {
         setError(data.error || "Error al cargar clientes");
       }
     } catch (err) {
-      setError("Error de conexión");
+      setError("Error de conexiÃ³n");
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +110,7 @@ export default function CustomersClient() {
   function handleDeleteCustomer(customerId: string, customerName: string) {
     setConfirmAction({
       title: "Eliminar cliente",
-      message: `¿Estás seguro de eliminar a ${customerName}?`,
+      message: `Â¿EstÃ¡s seguro de eliminar a ${customerName}?`,
       onConfirm: async () => {
         setConfirmAction(null);
         try {
@@ -176,13 +176,14 @@ export default function CustomersClient() {
       <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Search */}
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               placeholder="Buscar por nombre, email, telefono o DNI..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients focus:border-section-clients transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-background border border-border text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-section-clients focus:border-section-clients transition-all"
             />
           </div>
 
@@ -213,27 +214,47 @@ export default function CustomersClient() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Total Clientes</p>
-          <p className="text-2xl font-bold text-section-clients">{customers.length}</p>
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+            <UsersIcon className="w-5 h-5 text-section-clients" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-section-clients">{customers.length}</p>
+            <p className="text-xs text-muted-foreground">Total Clientes</p>
+          </div>
         </div>
-        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Activos</p>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {customers.filter((c) => c.status === "ACTIVE").length}
-          </p>
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+            <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {customers.filter((c) => c.status === "ACTIVE").length}
+            </p>
+            <p className="text-xs text-muted-foreground">Activos</p>
+          </div>
         </div>
-        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Premium</p>
-          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            {customers.filter((c) => c.category === "PREMIUM").length}
-          </p>
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+            <StarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              {customers.filter((c) => c.category === "PREMIUM").length}
+            </p>
+            <p className="text-xs text-muted-foreground">Premium</p>
+          </div>
         </div>
-        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4">
-          <p className="text-sm text-muted-foreground">Inactivos</p>
-          <p className="text-2xl font-bold text-muted-foreground">
-            {customers.filter((c) => c.status === "INACTIVE").length}
-          </p>
+        <div className="bg-section-clients-light border border-section-clients-border rounded-2xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+            <WarningIcon className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-muted-foreground">
+              {customers.filter((c) => c.status === "INACTIVE").length}
+            </p>
+            <p className="text-xs text-muted-foreground">Inactivos</p>
+          </div>
         </div>
       </div>
 

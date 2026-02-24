@@ -44,6 +44,8 @@ model User {
   image         String?
   emailVerified DateTime?
   role          Role      @default(USER)
+  department    String?
+  jobFunction   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

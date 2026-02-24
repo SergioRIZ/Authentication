@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
+
+const mockRequest = () => new NextRequest("http://localhost/api/workers");
 
 // --- Mocks ---
 
@@ -30,7 +33,7 @@ describe("GET /api/workers", () => {
   it("should return 401 if not authenticated", async () => {
     mockAuth.mockResolvedValue(null);
 
-    const res = await GET();
+    const res = await GET(mockRequest());
     expect(res.status).toBe(401);
   });
 
@@ -38,7 +41,7 @@ describe("GET /api/workers", () => {
     mockAuth.mockResolvedValue({ user: { email: "ghost@test.com" } });
     mockPrismaUser.findUnique.mockResolvedValue(null);
 
-    const res = await GET();
+    const res = await GET(mockRequest());
     expect(res.status).toBe(404);
   });
 
@@ -49,7 +52,7 @@ describe("GET /api/workers", () => {
       { id: "w1", name: "Worker 1", email: "w1@test.com", role: "USER" },
     ]);
 
-    const res = await GET();
+    const res = await GET(mockRequest());
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -68,7 +71,7 @@ describe("GET /api/workers", () => {
       { id: "admin-1", name: "Admin", email: "admin@test.com", role: "ADMIN" },
     ]);
 
-    const res = await GET();
+    const res = await GET(mockRequest());
     expect(res.status).toBe(200);
 
     // Should include self-assignment option
@@ -83,7 +86,7 @@ describe("GET /api/workers", () => {
     mockPrismaUser.findUnique.mockResolvedValue({ id: "super-1", role: "SUPER_ADMIN" });
     mockPrismaUser.findMany.mockResolvedValue([]);
 
-    const res = await GET();
+    const res = await GET(mockRequest());
     expect(res.status).toBe(200);
 
     const queryArg = mockPrismaUser.findMany.mock.calls[0][0];
@@ -97,7 +100,7 @@ describe("GET /api/workers", () => {
     mockPrismaUser.findUnique.mockResolvedValue({ id: "user-1", role: "USER" });
     mockPrismaUser.findMany.mockResolvedValue([]);
 
-    await GET();
+    await GET(mockRequest());
 
     const queryArg = mockPrismaUser.findMany.mock.calls[0][0];
     expect(queryArg.where.emailVerified).toEqual({ not: null });

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SpinnerIcon, UsersGroupIcon } from "@/components/ui/icons";
+import { SpinnerIcon, UsersGroupIcon, PencilIcon, TrashIcon } from "@/components/ui/icons";
 import { CategoryBadge, CustomerStatusBadge } from "@/components/ui/badges";
 
 interface Worker {
@@ -58,7 +58,7 @@ export default function CustomerTable({
         <UsersGroupIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         <p className="text-muted-foreground">No hay clientes</p>
         <p className="text-sm text-muted-foreground mt-1">
-          Añade tu primer cliente haciendo clic en "Nuevo Cliente"
+          AÃ±ade tu primer cliente haciendo clic en "Nuevo Cliente"
         </p>
       </div>
     );
@@ -175,19 +175,20 @@ export default function CustomerTable({
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-1">
                   <button
                     onClick={() => onEdit(customer)}
-                    className="text-sm text-section-clients hover:opacity-80 font-medium transition-colors"
+                    title="Editar"
+                    className="p-1.5 text-muted-foreground hover:text-section-clients hover:bg-section-clients-light rounded-lg transition-colors"
                   >
-                    Editar
+                    <PencilIcon className="w-4 h-4" />
                   </button>
-                  <span className="text-muted-foreground">|</span>
                   <button
                     onClick={() => onDelete(customer.id, customer.name)}
-                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium transition-colors"
+                    title="Eliminar"
+                    className="p-1.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
-                    Eliminar
+                    <TrashIcon className="w-4 h-4" />
                   </button>
                 </div>
               </td>

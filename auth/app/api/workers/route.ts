@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
 
-// GET - List workers that can be assigned by the current user
-export async function GET() {
+// GET - List workers (two modes: default for assignment dropdowns, ?view=list for admin workers page)
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
 
@@ -12,7 +12,6 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Get current user's role
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { id: true, role: true },
@@ -22,18 +21,45 @@ export async function GET() {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
-    // Determine which roles the current user can assign work to:
-    // - USER can only assign to USER
-    // - ADMIN can only assign to USER and themselves (not other ADMIN)
-    // - SUPER_ADMIN can assign to USER, ADMIN, and themselves (not other SUPER_ADMIN)
+    const view = request?.url ? new URL(request.url).searchParams.get("view") : null;
+
+    // Admin list view — returns all workers with department, function, and counts
+    if (view === "list") {
+      if (currentUser.role !== "ADMIN" && currentUser.role !== "SUPER_ADMIN") {
+        return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
+      }
+
+      const workers = await prisma.user.findMany({
+        where: { emailVerified: { not: null } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          role: true,
+          department: true,
+          jobFunction: true,
+          createdAt: true,
+          _count: {
+            select: {
+              assignedTasks: true,
+              assignedCustomers: true,
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+      });
+
+      return NextResponse.json({ workers }, { status: 200 });
+    }
+
+    // Default mode — assignment dropdowns (existing behavior)
     let allowedRoles: Role[] = ["USER"];
 
     if (currentUser.role === "SUPER_ADMIN") {
       allowedRoles = ["USER", "ADMIN"];
     }
 
-    // Get workers filtered by allowed roles
-    // ADMIN and SUPER_ADMIN can also assign to themselves
     const canAssignToSelf = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
 
     const workers = await prisma.user.findMany({
@@ -41,7 +67,6 @@ export async function GET() {
         emailVerified: { not: null },
         OR: [
           { role: { in: allowedRoles } },
-          // ADMIN and SUPER_ADMIN can also assign to themselves
           ...(canAssignToSelf ? [{ id: currentUser.id }] : []),
         ],
       },
